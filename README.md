@@ -2,12 +2,28 @@
 
 ## Requirements
 
-```bash
-postgres version 12-alpine
-Docker version 24.0.9-1
-GNU Make 4.2.1
-migrate version 4.17.0
-```
+This project requires the following tools and libraries to be installed on your system. Please ensure you have the specified versions or later.
+
+### Tools
+
+- **PostgreSQL**: Version 12-alpine
+ - Installation: Follow the official PostgreSQL installation guide for your operating system.
+
+- **Docker**: Version 24.0.9-1
+ - Installation: Follow the official Docker installation guide for your operating system.
+
+- **GNU Make**: Version 4.2.1
+ - Installation: Use your system's package manager. For example, on Ubuntu, you can use `sudo apt install make`.
+
+- **Migrate**: Version 4.17.0
+ - Installation: Use the following command to install Migrate: (official guide may occurs some mistakes: [issues#818](https://github.com/golang-migrate/migrate/issues/818#issuecomment-1270444615)) 
+ `1. wget http://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.deb`         
+ `2. sudo dpkg -i migrate.linux-amd64.deb`
+
+- **Sqlc**: Version 1.25.0
+ - Installation: `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`     
+ 
+
 
 ```bash
 # migrate schema files to databse
