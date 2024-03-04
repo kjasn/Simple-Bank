@@ -20,9 +20,14 @@ This project requires the following tools and libraries to be installed on your 
  `1. wget http://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.deb`         
  `2. sudo dpkg -i migrate.linux-amd64.deb`
 
-- **Sqlc**: Version 1.25.0
+- **Sqlc**: Version 1.25.0      using to generate CRUD code 
  - Installation: `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`     
  
+- **lib/pq**: Version 1.10.9    using to provide a driver that implements postgres
+ - Installtion: `go get github.com/lib/pq`
+
+- **testify** Version 1.9.0     using to check the unite test return
+ - Installtion: `go get github.com/stretchr/testify`
 
 
 ```bash
