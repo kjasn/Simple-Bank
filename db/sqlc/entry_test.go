@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// make sure each unite test independent
+// make sure each unit test independent
 func createRandomEntry(t *testing.T) Entry {
 	account := createRandomAccount(t)
 	arg := CreateEntryParams {
 		AccountID: account.ID,
-		Amount: utils.RandomMoney(),
+		Amount: utils.RandomInt(-account.Balance, account.Balance),		// a custom upper limit
 	}
 
 	entry, err := testQueries.CreateEntry(context.Background(), arg);

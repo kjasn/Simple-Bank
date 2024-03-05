@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// make sure each unite test independent
+// make sure each unit test independent
 func createRandomAccount(t *testing.T) Account {
 	arg := CreateAccountParams {
 		Owner: utils.RandomOwner(),

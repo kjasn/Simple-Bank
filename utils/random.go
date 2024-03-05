@@ -26,7 +26,7 @@ func RandomString(n int) string {
 
 
 // RandomInt generate a random int64   [mn, mx]
-func RandomInt(mn, mx int64) int64 {	// in case have confilcs with func max & min
+func RandomInt(mn, mx int64) int64 {	// in case have conflicts with func max & min
 	return mn + rand.Int63n(mx - mn + 1)
 }
 

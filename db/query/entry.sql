@@ -23,9 +23,3 @@ UPDATE entries
 SET amount = $2 
 WHERE id = $1
 RETURNING *;
-
--- don't return 
--- delete one entry
--- name: DeleteEntry :exec
-DELETE FROM entries
-WHERE id = $1;

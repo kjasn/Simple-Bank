@@ -13,7 +13,7 @@ SELECT * FROM transfers
 WHERE from_account_id = $1 AND to_account_id = $2
 LIMIT 1;
 
--- name: ListFromIDTransfers :many
+-- name: ListTransfers :many
 SELECT * FROM transfers
 ORDER BY id
 LIMIT $1
@@ -27,8 +27,3 @@ UPDATE transfers
 SET amount = $3 
 WHERE from_account_id = $1 AND to_account_id = $2
 RETURNING *;
-
--- delete one transfer
--- name: DeleteTransfer :exec
-DELETE FROM transfers
-WHERE from_account_id = $1 AND to_account_id = $2;
