@@ -15,7 +15,7 @@ This project requires the following tools and libraries to be installed on your 
 - **GNU Make**: Version 4.2.1
  - Installation: Use your system's package manager. For example, on Ubuntu, you can use `sudo apt install make`.
 
-- **Migrate**: Version 4.17.0
+- **Migrate**: Version 4.17.0   using to build DB with sql files
  - Installation: Use the following command to install Migrate: (official guide may occurs some mistakes: [issues#818](https://github.com/golang-migrate/migrate/issues/818#issuecomment-1270444615)) 
  `1. wget http://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.deb`         
  `2. sudo dpkg -i migrate.linux-amd64.deb`
@@ -24,13 +24,8 @@ This project requires the following tools and libraries to be installed on your 
  - Installation: `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`     
  
 - **lib/pq**: Version 1.10.9    using to provide a driver that implements postgres
- - Installtion: `go get github.com/lib/pq`
+ - Installation: `go get github.com/lib/pq`
 
 - **testify** Version 1.9.0     using to check the unite test return
- - Installtion: `go get github.com/stretchr/testify`
+ - Installation: `go get github.com/stretchr/testify`
 
-
-```bash
-# migrate schema files to databse
-migrate -path db/migration -database "postgres://root:8520@localhost:5432/simple_bank?sslmode=disable" -verbose up
-```

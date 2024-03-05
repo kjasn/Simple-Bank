@@ -1,7 +1,7 @@
 -- name: CreateAccount :one
 INSERT INTO accounts (
   owner, 
-  banlance,
+  balance,
   currency
 ) VALUES (
   $1, $2, $3
@@ -21,7 +21,7 @@ OFFSET $2;
 -- ONLY update the balance of an account by id, and we want to get return after update
 -- name: UpdateAccount :one
 UPDATE accounts 
-SET banlance = $2 
+SET balance = $2 
 WHERE id = $1
 RETURNING *;
 

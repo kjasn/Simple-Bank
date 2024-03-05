@@ -14,7 +14,7 @@ import (
 func createRandomAccount(t *testing.T) Account {
 	arg := CreateAccountParams {
 		Owner: utils.RandomOwner(),
-		Banlance: utils.RandomMoney(),
+		Balance: utils.RandomMoney(),
 		Currency: utils.RandomCurrency(),
 	}
 
@@ -24,7 +24,7 @@ func createRandomAccount(t *testing.T) Account {
 	require.NoError(t, err)
 	require.NotEmpty(t, account)
 	require.Equal(t, arg.Owner, account.Owner)
-	require.Equal(t, arg.Banlance, account.Banlance)
+	require.Equal(t, arg.Balance, account.Balance)
 	require.Equal(t, arg.Currency, account.Currency)
 	// assert not zero value of its type
 	require.NotZero(t, account.ID)
@@ -46,7 +46,7 @@ func TestGetAccount(t *testing.T) {
 
 	require.Equal(t, account1.ID, account2.ID)
 	require.Equal(t, account1.Owner, account2.Owner)
-	require.Equal(t, account1.Banlance, account2.Banlance)
+	require.Equal(t, account1.Balance, account2.Balance)
 	require.Equal(t, account1.Currency, account2.Currency)
 	require.WithinDuration(t, account1.CreatedAt, account2.CreatedAt, time.Second)	// set the delta time 1s
 }
@@ -55,14 +55,14 @@ func TestUpdateAccount(t *testing.T) {
 	oldAccount := createRandomAccount(t)
 	arg := UpdateAccountParams {
 		ID: oldAccount.ID,
-		Banlance: utils.RandomMoney(),
+		Balance: utils.RandomMoney(),
 	}
 
 	newAccount, err := testQueries.UpdateAccount(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, newAccount)
 	require.Equal(t, oldAccount.ID, newAccount.ID)
-	require.Equal(t, arg.Banlance, newAccount.Banlance)
+	require.Equal(t, arg.Balance, newAccount.Balance)
 	require.Equal(t, oldAccount.Currency, newAccount.Currency)
 	require.WithinDuration(t, oldAccount.CreatedAt, newAccount.CreatedAt, time.Second)	// set the delta time 1s
 }
