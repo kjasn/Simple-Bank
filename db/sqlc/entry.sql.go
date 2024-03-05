@@ -35,17 +35,6 @@ func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry
 	return i, err
 }
 
-const deleteEntries = `-- name: DeleteEntries :exec
-DELETE FROM entries
-WHERE account_id = $1
-`
-
-// delete many entries by account_id
-func (q *Queries) DeleteEntries(ctx context.Context, accountID int64) error {
-	_, err := q.db.ExecContext(ctx, deleteEntries, accountID)
-	return err
-}
-
 const deleteEntry = `-- name: DeleteEntry :exec
 DELETE FROM entries
 WHERE id = $1
@@ -77,19 +66,18 @@ func (q *Queries) GetEntry(ctx context.Context, id int64) (Entry, error) {
 
 const listEntries = `-- name: ListEntries :many
 SELECT id, account_id, amount, created_at FROM entries
-WHERE account_id = $1
-LIMIT $2
-OFFSET $3
+ORDER BY id
+LIMIT $1
+OFFSET $2
 `
 
 type ListEntriesParams struct {
-	AccountID int64 `json:"account_id"`
-	Limit     int32 `json:"limit"`
-	Offset    int32 `json:"offset"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
 func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error) {
-	rows, err := q.db.QueryContext(ctx, listEntries, arg.AccountID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listEntries, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -38,28 +38,6 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 	return i, err
 }
 
-const deleteFromIDTransfers = `-- name: DeleteFromIDTransfers :exec
-DELETE FROM transfers
-WHERE from_account_id = $1
-`
-
-// delete many transfers by from_account_id
-func (q *Queries) DeleteFromIDTransfers(ctx context.Context, fromAccountID int64) error {
-	_, err := q.db.ExecContext(ctx, deleteFromIDTransfers, fromAccountID)
-	return err
-}
-
-const deleteTOIDTransfers = `-- name: DeleteTOIDTransfers :exec
-DELETE FROM transfers
-WHERE to_account_id = $1
-`
-
-// delete many transfers by to_account_id
-func (q *Queries) DeleteTOIDTransfers(ctx context.Context, toAccountID int64) error {
-	_, err := q.db.ExecContext(ctx, deleteTOIDTransfers, toAccountID)
-	return err
-}
-
 const deleteTransfer = `-- name: DeleteTransfer :exec
 DELETE FROM transfers
 WHERE from_account_id = $1 AND to_account_id = $2
@@ -103,63 +81,18 @@ func (q *Queries) GetTransfer(ctx context.Context, arg GetTransferParams) (Trans
 
 const listFromIDTransfers = `-- name: ListFromIDTransfers :many
 SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
-WHERE from_account_id = $1
-LIMIT $2
-OFFSET $3
+ORDER BY id
+LIMIT $1
+OFFSET $2
 `
 
 type ListFromIDTransfersParams struct {
-	FromAccountID int64 `json:"from_account_id"`
-	Limit         int32 `json:"limit"`
-	Offset        int32 `json:"offset"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
-// get by from_account_id
 func (q *Queries) ListFromIDTransfers(ctx context.Context, arg ListFromIDTransfersParams) ([]Transfer, error) {
-	rows, err := q.db.QueryContext(ctx, listFromIDTransfers, arg.FromAccountID, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Transfer
-	for rows.Next() {
-		var i Transfer
-		if err := rows.Scan(
-			&i.ID,
-			&i.FromAccountID,
-			&i.ToAccountID,
-			&i.Amount,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listToIDTransfers = `-- name: ListToIDTransfers :many
-SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
-WHERE to_account_id = $1
-LIMIT $2
-OFFSET $3
-`
-
-type ListToIDTransfersParams struct {
-	ToAccountID int64 `json:"to_account_id"`
-	Limit       int32 `json:"limit"`
-	Offset      int32 `json:"offset"`
-}
-
-// get by to_account_id
-func (q *Queries) ListToIDTransfers(ctx context.Context, arg ListToIDTransfersParams) ([]Transfer, error) {
-	rows, err := q.db.QueryContext(ctx, listToIDTransfers, arg.ToAccountID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listFromIDTransfers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

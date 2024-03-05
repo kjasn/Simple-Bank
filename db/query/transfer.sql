@@ -13,19 +13,12 @@ SELECT * FROM transfers
 WHERE from_account_id = $1 AND to_account_id = $2
 LIMIT 1;
 
--- get by from_account_id
 -- name: ListFromIDTransfers :many
 SELECT * FROM transfers
-WHERE from_account_id = $1
-LIMIT $2
-OFFSET $3;
+ORDER BY id
+LIMIT $1
+OFFSET $2;
 
--- get by to_account_id
--- name: ListToIDTransfers :many
-SELECT * FROM transfers
-WHERE to_account_id = $1
-LIMIT $2
-OFFSET $3;
 
 
 -- ONLY update the amount of an entry by from_account_id AND to_account_id 
@@ -39,15 +32,3 @@ RETURNING *;
 -- name: DeleteTransfer :exec
 DELETE FROM transfers
 WHERE from_account_id = $1 AND to_account_id = $2;
-
-
--- delete many transfers by from_account_id
--- name: DeleteFromIDTransfers :exec
-DELETE FROM transfers
-WHERE from_account_id = $1;
-
-
--- delete many transfers by to_account_id
--- name: DeleteTOIDTransfers :exec
-DELETE FROM transfers
-WHERE to_account_id = $1;
