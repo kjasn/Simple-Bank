@@ -7,10 +7,9 @@ INSERT INTO transfers (
   $1, $2, $3
 )RETURNING *;
 
--- get by from_account_id AND to_account_id
 -- name: GetTransfer :one
 SELECT * FROM transfers 
-WHERE from_account_id = $1 AND to_account_id = $2
+WHERE id = $1
 LIMIT 1;
 
 -- name: ListTransfers :many
