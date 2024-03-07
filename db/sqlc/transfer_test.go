@@ -40,12 +40,8 @@ func TestCreateTransfer(t *testing.T) {
 
 func TestGetTransfer(t *testing.T) {
 	transfer1 := createRandomTransfer(t)
-	arg := GetTransferParams{
-		FromAccountID: transfer1.FromAccountID,
-		ToAccountID: transfer1.ToAccountID,
-	}
 
-	transfer2, err := testQueries.GetTransfer(context.Background(), arg)
+	transfer2, err := testQueries.GetTransfer(context.Background(), transfer1.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, transfer2)
