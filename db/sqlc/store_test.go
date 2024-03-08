@@ -19,7 +19,7 @@ func TestTransferTx(t *testing.T) {
 	fmt.Println(">>start: ", account1.Balance, " ", account2.Balance)
 
 	// create transfer transaction by concurrency
-	cc := 2		// set the number of concurrent goroutines
+	cc := 5		// set the number of concurrent goroutines
 	errs := make(chan error, cc)
 	results := make(chan TransferTxResult, cc)
 
@@ -86,6 +86,7 @@ func TestTransferTx(t *testing.T) {
 		// check account
 		fromAccount := res.FromAccount
 		toAccount := res.ToAccount
+
 		require.NotEmpty(t, fromAccount)
 		require.NotEmpty(t, toAccount)
 		require.Equal(t, account1.ID, fromAccount.ID)
@@ -95,6 +96,7 @@ func TestTransferTx(t *testing.T) {
 		// check balance
 		diff1 := account1.Balance - res.FromAccount.Balance
 		diff2 := res.ToAccount.Balance - account2.Balance
+
 		require.Equal(t, diff1, diff2)
 		require.True(t, diff1 > 0)
 		require.True(t, diff1 % amount == 0)
@@ -107,8 +109,6 @@ func TestTransferTx(t *testing.T) {
 		fmt.Printf("transaction %d: %d, %d\n", k, fromAccount.Balance, toAccount.Balance)
 	}
 
-	// logs
-	fmt.Println(">>end: ", account1.Balance, " ", account2.Balance)
 
 	// check the final updated balance
 
@@ -122,4 +122,6 @@ func TestTransferTx(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, account2.Balance + int64(cc) * amount, updatedAccount2.Balance)
 
+	// logs
+	fmt.Println(">>end: ", updatedAccount1.Balance, " ", updatedAccount2.Balance)
 }

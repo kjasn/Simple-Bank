@@ -34,3 +34,4 @@ This project requires the following tools and libraries to be installed on your 
 
 1. `deleteXxx` function for entries and transfers
 2. Search entries or transfers by account id AND how to automatically generate the unit tests.
+3. deal with the deadlock
