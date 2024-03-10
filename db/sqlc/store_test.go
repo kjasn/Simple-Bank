@@ -16,7 +16,7 @@ func TestTransferTx(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 
-	fmt.Println(">>start: ", account1.Balance, " ", account2.Balance)
+	// fmt.Println(">>start: ", account1.Balance, " ", account2.Balance)
 
 	// create transfer transaction by concurrency
 	cc := 5		// set the number of concurrent goroutines
@@ -106,7 +106,7 @@ func TestTransferTx(t *testing.T) {
 		existed[k] = true
 
 
-		fmt.Printf("transaction %d: %d, %d\n", k, fromAccount.Balance, toAccount.Balance)
+		// fmt.Printf("transaction %d: %d, %d\n", k, fromAccount.Balance, toAccount.Balance)
 	}
 
 

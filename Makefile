@@ -16,4 +16,7 @@ sqlc:
 	sqlc generate
 test:
 	go test -v -cover ./...
-.PHONY: postgres terminate createdb dropdb migrateup migratedown sqlc test start
+psql:
+	docker exec -it postgres12 psql -U root -d simple_bank
+
+.PHONY: postgres terminate createdb dropdb migrateup migratedown sqlc test start psql

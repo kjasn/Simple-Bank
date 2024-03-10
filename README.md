@@ -81,19 +81,20 @@ WHERE NOT blocked_locks.granted;
 The following query allow us to list all the locks in our database.
 
 ```sql
-SELECT a.datname,
+SELECT 
+        a.application_name,
         l.relation::regclass,
         l.transactionid,
         l.mode,
+				l.locktype,
         l.GRANTED,
         a.usename,
         a.query,
-        a.query_start,
-        age(now(), a.query_start) AS "age",
         a.pid
 FROM pg_stat_activity a
 JOIN pg_locks l ON l.pid = a.pid
-ORDER BY a.query_start;
+WHERE a.application_name = 'psql'
+ORDER BY a.pid;
 ```
 
 We may find a select option from accounts table needs to get lock from other transaction that runs insert option on transfers table.  Back to schema:
@@ -112,5 +113,14 @@ WHERE id = $1 LIMIT 1
 FOR NO KEY UPDATE;
 ```
 
+However, the above ways to deal with deadlock may still occurs some mistakes. 
+For example, there are 2 transactions, one transfers account1 to account2, and the other transfers account2 back to account1. 
 
+The order of update account's balance:
+- Transfer1: account1 - amount   -->   account2 + amount
+- Transfer2: account2 - amount   -->   account1 + amount
+
+So, before each of them commit, they hold a exclusive lock which blocks the other to acquire.
+
+The best way is to avoid deadlock by making sure that the transfers are processed **in an consistent order**. Like we can enable each transfer update account with smaller ID first.
 
