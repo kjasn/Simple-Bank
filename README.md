@@ -120,7 +120,7 @@ The order of update account's balance:
 - Transfer1: account1 - amount   -->   account2 + amount
 - Transfer2: account2 - amount   -->   account1 + amount
 
-So, before each of them commit, they hold a exclusive lock which blocks the other to acquire.
+So, before each of them commit, they hold a exclusive lock which blocks the other.
 
 The best way is to avoid deadlock by making sure that the transfers are processed **in an consistent order**. Like we can enable each transfer update account with smaller ID first.
 
