@@ -124,3 +124,17 @@ So, before each of them commit, they hold a exclusive lock which blocks the othe
 
 The best way is to avoid deadlock by making sure that the transfers are processed **in an consistent order**. Like we can enable each transfer update account with smaller ID first.
 
+
+## About transaction isolation level
+
+
+The following table is copy from [postgressql document](https://www.postgresql.org/docs/current/transaction-iso.html)
+
+|Isolation Level    |Dirty Read	|Nonrepeatable Read	|Phantom Read	|Serialization Anomaly|
+|:-:|:-:|:-:|:-:|:-:|
+|Read uncommitted	|**Allowed, but not in PG**	|Possible|	Possible	|Possible|
+|Read committed	|Not possible	|Possible	|Possible	|Possible|
+|Repeatable read	|Not possible	|Not possible|	**Allowed, but not in PG**	|Possible|
+|Serializable	|Not possible	|Not possible   |Not possible	|Not possible|
+
+Read uncommitted is the **SAME** as read committed(default level) **in postgres**. lBasically, there are 3 isolation levels in postgres.
