@@ -12,7 +12,7 @@ import (
 const (
 	dbDriver = "postgres"	// can not directly use postgres as driver pass to sql.Open
 	dsn = "postgres://root:8520@localhost:5432/simple_bank?sslmode=disable"
-	address = "127.0.0.1:8080"
+	address = ":8080"
 )
 
 func main() {
