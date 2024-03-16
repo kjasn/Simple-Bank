@@ -9,5 +9,6 @@ sql:
         emit_prepared_queries: false
         emit_interface: false
         emit_exact_table_names: false
+        emit_empty_slices: true
         package:  "db"
         out: "./db/sqlc" 
