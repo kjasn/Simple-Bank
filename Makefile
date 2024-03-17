@@ -20,5 +20,7 @@ psql:
 	docker exec -it postgres12 psql -U root -d simple_bank
 server:
 	go run main.go
+mock:
+	mockgen -package mockdb -destination db/mock/store.go github.com/kjasn/simple-bank/db/sqlc Store
 
 .PHONY: postgres terminate createdb dropdb migrateup migratedown sqlc test start psql server

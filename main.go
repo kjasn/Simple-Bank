@@ -6,17 +6,21 @@ import (
 
 	"github.com/kjasn/simple-bank/api"
 	db "github.com/kjasn/simple-bank/db/sqlc"
+	"github.com/kjasn/simple-bank/utils"
 	_ "github.com/lib/pq" // provide a driver that implements postgres
 )
 
-const (
-	dbDriver = "postgres"	// can not directly use postgres as driver pass to sql.Open
-	dsn = "postgres://root:8520@localhost:5432/simple_bank?sslmode=disable"
-	address = ":8080"
-)
+
 
 func main() {
-	conn, err := sql.Open(dbDriver, dsn)
+	config, err := utils.LoadConfig(".")
+
+	if err != nil {
+		log.Fatal("Cannot load config:", err)
+	}
+
+
+	conn, err := sql.Open(config.DBDriver, config.DSN)
 	if err != nil {
 		log.Fatal("Fail to connect to the db:", err)
 	}
@@ -24,7 +28,7 @@ func main() {
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	err = server.Start(address)
+	err = server.Start(config.ServerAddress)
 	if err != nil {
 		log.Fatal("Cannot not start server: ", err)
 	}

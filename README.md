@@ -29,6 +29,14 @@ This project requires the following tools and libraries to be installed on your 
 - **testify** Version 1.9.0     using to check the unit test return
     - Installation: `go get github.com/stretchr/testify`
 
+- **Gin** Version 1.9.1
+    - Installation: `go get -u github.com/gin-gonic/gin`
+
+- **Viper** Version 1.18.2      using to load configurations from files or environment variables
+    - Installation: `go get github.com/spf13/viper`
+
+- **gomock** Version 1.6.0
+    - Installation: `go get github.com/golang/mock/mockgen@v1.6.0`
 
 ## TODO
 
@@ -138,3 +146,5 @@ The following table is copy from [postgressql document](https://www.postgresql.o
 |Serializable	|Not possible	|Not possible   |Not possible	|Not possible|
 
 Read uncommitted is the **SAME** as read committed(default level) **in postgres**. lBasically, there are 3 isolation levels in postgres.
+
+Postgres uses **dependencies checking mechanism** to prevent the **serialization anomaly**, while MySQL uses **locking mechanism**.

@@ -6,22 +6,28 @@ import (
 	"fmt"
 )
 
-// provide all functions to execute db queries and transactions
-type Store struct {
+// Store provides all functions to execute db queries and transactions
+type Store interface {
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+}
+
+// SQLStore, a real implementation of Store
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db: db,
 		Queries: New(db),
 	}
 }
 
 // execTx executes a function within a database transaction.
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	// begin transaction
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -61,16 +67,14 @@ type TransferTxResult struct {
 var txKey = struct{}{}
 
 // TransferTx create transfer, entries between 2 accounts, update accounts balance 
-func (Store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (SQLStore *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
-	err := Store.execTx(ctx, func(q *Queries) error {
+	err := SQLStore.execTx(ctx, func(q *Queries) error {
 		var err error
 		// use the Queries q within a transaction to access db 
 
 		// create transfer
-		// txName := ctx.Value(txKey)
-		// fmt.Println(txName, "create transfer")
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams(arg))
 
 		if err != nil {
@@ -78,7 +82,6 @@ func (Store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		// create fromAccount entry
-		// fmt.Println(txName, "create FromAccount entry")
 		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.FromAccountID,
 			Amount: -arg.Amount,
@@ -89,7 +92,6 @@ func (Store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		// create toAccount entry
-		// fmt.Println(txName, "create ToAccount entry")
 		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
 			AccountID: arg.ToAccountID,
 			Amount: arg.Amount,
@@ -99,7 +101,6 @@ func (Store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 
-		// fmt.Println(txName, "get FromAccount")
 		account1, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
 		if err != nil {
 			return err
