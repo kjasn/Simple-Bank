@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/kjasn/simple-bank/db/sqlc"
@@ -40,19 +39,22 @@ func (server *Server) createAccount(ctx *gin.Context) {
 }
 
 
-// getAccount	return 1 account 
-func (server *Server) getAccount(ctx *gin.Context) {
-	id, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
+type getAccountRequest struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
 
-	if err != nil {
+// getAccount	
+func (server *Server) getAccount(ctx *gin.Context) {
+	var req getAccountRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	account, err := server.store.GetAccount(ctx, id)
+	account, err := server.store.GetAccount(ctx, req.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusBadRequest, errorResponse(err))
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
 

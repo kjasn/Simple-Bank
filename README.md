@@ -148,3 +148,10 @@ The following table is copy from [postgressql document](https://www.postgresql.o
 Read uncommitted is the **SAME** as read committed(default level) **in postgres**. lBasically, there are 3 isolation levels in postgres.
 
 Postgres uses **dependencies checking mechanism** to prevent the **serialization anomaly**, while MySQL uses **locking mechanism**.
+
+[More details](https://kjasn.github.io/2024/03/18/Transaction-isolation-level-of-DB/)...
+
+
+## UnitTest in Mock
+
+Mock store is separated for each test case.
