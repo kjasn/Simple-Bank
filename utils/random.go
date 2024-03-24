@@ -39,7 +39,7 @@ func RandomOwner() string {
 
 // RandomMoney generate a random money amount
 func RandomMoney() int64 {
-	return RandomInt(0, 1000)
+	return RandomInt(1, 1000)
 }
 
 // RandomCurrency generate a random currency code
