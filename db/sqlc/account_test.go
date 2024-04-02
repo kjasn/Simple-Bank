@@ -12,8 +12,11 @@ import (
 
 // make sure each unit test independent
 func createRandomAccount(t *testing.T) Account {
+	// create a user first
+	user := createRandomUser(t)
+
 	arg := CreateAccountParams {
-		Owner: utils.RandomOwner(),
+		Owner: user.Username,	// set foreign key 
 		Balance: utils.RandomMoney(),
 		Currency: utils.RandomCurrency(),
 	}
