@@ -7,8 +7,14 @@ import (
 	"time"
 )
 
-var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+const (
+	alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	lenOfPassword = 6
+	lenOfOwner = 6
+	lenOfEmailPrefix = 6
+	maxRandomMoney = 1000
+)
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -34,13 +40,13 @@ func RandomInt(mn, mx int64) int64 {	// in case have conflicts with func max & m
 
 // RandomOwner generate a random owner name with 6 character
 func RandomOwner() string {
-	return RandomString(6)	// 
+	return RandomString(lenOfOwner)	// 
 }
 
 
 // RandomMoney generate a random money amount
 func RandomMoney() int64 {
-	return RandomInt(1, 1000)
+	return RandomInt(1, maxRandomMoney)
 }
 
 // RandomCurrency generate a random currency code
@@ -52,5 +58,5 @@ func RandomCurrency() string {
 
 // RandomEmail generate a random email
 func RandomEmail() string {
-	return fmt.Sprintf("%s@example.com", RandomString(6))
+	return fmt.Sprintf("%s@example.com", RandomString(lenOfEmailPrefix))
 }
