@@ -45,7 +45,7 @@ This project requires the following tools and libraries to be installed on your 
 3. deal with the deadlock
 
 
-## Deal with concurrency and deadlock
+## Deal With Concurrency And Deadlock
 
 First, we add `FOR UPDATE` to function `GetAccount`:
 ```sql
@@ -133,7 +133,7 @@ So, before each of them commit, they hold a exclusive lock which blocks the othe
 The best way is to avoid deadlock by making sure that the transfers are processed **in an consistent order**. Like we can enable each transfer update account with smaller ID first.
 
 
-## About transaction isolation level
+## About Transaction Isolation Level
 
 
 The following table is copy from [postgressql document](https://www.postgresql.org/docs/current/transaction-iso.html)
@@ -149,9 +149,31 @@ Read uncommitted is the **SAME** as read committed(default level) **in postgres*
 
 Postgres uses **dependencies checking mechanism** to prevent the **serialization anomaly**, while MySQL uses **locking mechanism**.
 
-[More details](https://kjasn.github.io/2024/03/18/Transaction-isolation-level-of-DB/)...
+[More details in my blog](https://kjasn.github.io/2024/03/18/Transaction-isolation-level-of-DB/)...
 
 
 ## UnitTest in Mock
 
 Mock store is separated for each test case.
+
+## Add USERS Table
+
+Instead of resetting the old database and create a new one then migrate data to it, we are supposed to update it with a new edition.
+
+We set users table as follows:
+
+- Username as primary key.
+- Each account must links to a user via foreign key -- username.
+- Each user can have many accounts with **different** currency.
+- Each email address can only bind one user, it means email field is unique.
+
+
+## Bcrypt Password
+
+Basically, we do not save plain password text, instead we prefer to save encrypted password. Here we use bcrypt to generate hashed password. 
+
+In this encrypt algorithm, we use a **random salt** and a cost(the iterate times) to encrypt the provided password:
+
+1. Although the provided passwords are the same, it can generates different hash value.
+
+2. For comparing and checking password, it use the cost and the same salt from the hash value to encrypt the provided password, then check if the new hash value equals the provided one.
