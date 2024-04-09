@@ -39,7 +39,6 @@ func (e eqCreateUserParamsMatcher) Matches(x interface{}) bool {
 	}
 
 	e.arg.HashedPassword = arg.HashedPassword
-	
 	return reflect.DeepEqual(e.arg, arg)
 }
 
@@ -50,6 +49,7 @@ func (e eqCreateUserParamsMatcher) String() string {
 func EqCreateUserParams(arg db.CreateUserParams, password string) gomock.Matcher {
 	return eqCreateUserParamsMatcher{arg, password}
 }
+
 
 func TestCreateUserAPI(t *testing.T) {
 	user, password := createRandomUser(t)
@@ -93,7 +93,7 @@ func TestCreateUserAPI(t *testing.T) {
 				"email": user.Email,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().GetUser(gomock.Any(), gomock.Any()).
+				store.EXPECT().CreateUser(gomock.Any(), gomock.Any()).
 				Times(1).Return(db.User{}, sql.ErrConnDone)	// except no user found with internal server error
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
@@ -109,10 +109,57 @@ func TestCreateUserAPI(t *testing.T) {
 				"email": user.Email,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().GetUser(gomock.Any(), gomock.Any()).Times(1).
+				store.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).
 				Return(db.User{}, &pq.Error{Code: "23505"})	// except duplicated username	
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
+				require.Equal(t, http.StatusForbidden, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidUsername",
+			body: gin.H{
+				"username": "invalid-username",
+				"password": password,
+				"full_name": user.FullName,
+				"email": user.Email,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidEmail",
+			body: gin.H{
+				"username": user.Username,
+				"password": password,
+				"full_name": user.FullName,
+				"email": "invalid-Email",
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "TooShortPassword",
+			body: gin.H{
+				"username":  user.Username,
+				"password":  "123",	// at least 6 characters
+				"full_name": user.FullName,
+				"email":     user.Email,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -159,7 +206,10 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db.User) {
 	var gotUser db.User
 	err = json.Unmarshal(data, &gotUser)
 	require.NoError(t, err)
-	require.Equal(t, user, gotUser)
+	require.Equal(t, user.Username, gotUser.Username)
+	require.Equal(t, user.FullName, gotUser.FullName)
+	require.Equal(t, user.Email, gotUser.Email)
+	require.Empty(t, gotUser.HashedPassword)
 }
 
 func createRandomUser(t *testing.T) (db.User, string) {

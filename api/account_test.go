@@ -20,8 +20,7 @@ import (
 
 
 func TestGetAccountAPI(t *testing.T) {
-	user, _ := createRandomUser(t)
-	account := createRandomAccount(user.Username)
+	account := createRandomAccount()
 
 	testCases := []struct {
 		name string
@@ -109,14 +108,13 @@ func TestGetAccountAPI(t *testing.T) {
 }
 
 func TestCreateAccountAPI(t *testing.T) {
-	user, _ := createRandomUser(t)
-	account := createRandomAccount(user.Username)
+	account := createRandomAccount()
 
 	testCases := []struct {
 		name 	string
 		body 	gin.H
 		buildStubs func(store *mockdb.MockStore)
-		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+		checkResponse func(recorder *httptest.ResponseRecorder)
 	} {
 		{
 			name : "OK",
@@ -134,7 +132,7 @@ func TestCreateAccountAPI(t *testing.T) {
 				Times(1).
 				Return(account, nil)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
 				requireBodyMatchAccount(t, recorder.Body, account)
 			},
@@ -151,7 +149,7 @@ func TestCreateAccountAPI(t *testing.T) {
 				Times(1).
 				Return(db.Account{}, sql.ErrConnDone)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
 			},
 		},
@@ -166,8 +164,9 @@ func TestCreateAccountAPI(t *testing.T) {
 				store.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).
 				Times(0)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
+
 			},
 		},
 		{
@@ -181,7 +180,7 @@ func TestCreateAccountAPI(t *testing.T) {
 				store.EXPECT().CreateAccount(gomock.Any(), gomock.Any()).
 				Times(0)
 			},
-			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
@@ -214,16 +213,16 @@ func TestCreateAccountAPI(t *testing.T) {
 
 			// check response
 			server.router.ServeHTTP(recorder, request)	// send request and record the response in recorder
-			tc.checkResponse(t, recorder)
+			tc.checkResponse(recorder)
 		})
 	}
 } 
 
-func createRandomAccount(owner string) db.Account {
+func createRandomAccount() db.Account {
 	// create a random account
 	return db.Account{
 		ID: utils.RandomInt(1, 1000),
-		Owner: owner,
+		Owner: utils.RandomOwner(),
 		Balance: utils.RandomMoney(),
 		Currency: utils.RandomCurrency(),
 	}

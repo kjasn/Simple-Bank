@@ -10,20 +10,19 @@ import (
 )
 
 // make sure each unit test independent
-func createRandomEntry(t *testing.T) Entry {
-	account := createRandomAccount(t)
-	arg := CreateEntryParams {
+func createRandomEntry(t *testing.T, account Account) Entry {
+	arg := CreateEntryParams{
 		AccountID: account.ID,
-		Amount: utils.RandomInt(-account.Balance, account.Balance),		// a custom upper limit
+		Amount:    utils.RandomMoney(),
 	}
 
-	entry, err := testQueries.CreateEntry(context.Background(), arg);
-
-	// check the return with testify/require
+	entry, err := testQueries.CreateEntry(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, entry)
+
+	require.Equal(t, arg.AccountID, entry.AccountID)
 	require.Equal(t, arg.Amount, entry.Amount)
-	// assert not zero value of its type
+
 	require.NotZero(t, entry.ID)
 	require.NotZero(t, entry.CreatedAt)
 
@@ -31,11 +30,14 @@ func createRandomEntry(t *testing.T) Entry {
 }
 
 func TestCreateEntry(t *testing.T) {
-	createRandomEntry(t)
+	account := createRandomAccount(t)
+	createRandomEntry(t, account)
 }
 
 func TestGetEntry(t *testing.T) {
-	entry1 := createRandomEntry(t)
+	account := createRandomAccount(t)
+
+	entry1 := createRandomEntry(t, account)
 	entry2, err := testQueries.GetEntry(context.Background(), entry1.ID)
 
 	require.NoError(t, err)
@@ -47,7 +49,9 @@ func TestGetEntry(t *testing.T) {
 }
 
 func TestUpdateEntry(t *testing.T) {
-	oldEntry := createRandomEntry(t)
+	account := createRandomAccount(t)
+
+	oldEntry := createRandomEntry(t, account)
 	arg := UpdateEntryParams {
 		ID: oldEntry.ID,
 		Amount: utils.RandomMoney(),
@@ -62,24 +66,16 @@ func TestUpdateEntry(t *testing.T) {
 	require.WithinDuration(t, oldEntry.CreatedAt, newEntry.CreatedAt, time.Second)	// set the delta time 1s
 }
 
-// func TestDeleteEntry(t *testing.T) {
-// 	entry1 := createRandomEntry(t)	
-// 	err := testQueries.DeleteEntry(context.Background(), entry1.ID)
-// 	require.NoError(t, err)
-
-// 	entry2, err := testQueries.GetEntry(context.Background(), entry1.ID)
-// 	require.Error(t, err)
-// 	require.EqualError(t, err, sql.ErrNoRows.Error())
-// 	require.Empty(t, entry2)
-// }
 
 
 func TestListEntries(t *testing.T) {
+	account := createRandomAccount(t)
 	for i := 0; i < 20; i++ {
-		createRandomEntry(t)
+		createRandomEntry(t, account)
 	}
 
 	arg := ListEntriesParams {
+		AccountID: account.ID,
 		Limit: int32(utils.RandomInt(5, 10)),
 		Offset: int32(utils.RandomInt(5, 10)),
 	}

@@ -41,7 +41,7 @@ func toUserDTO(u *db.User) userDTO{
 func (server *Server) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	// get request from context
-	if err := ctx.ShouldBind(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
