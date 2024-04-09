@@ -85,7 +85,6 @@ type listAccountRequest struct {
 func (server *Server) listAccount(ctx *gin.Context) {
 	var req listAccountRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		fmt.Println("error1")
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
@@ -99,7 +98,6 @@ func (server *Server) listAccount(ctx *gin.Context) {
 
 	listAccounts, err := server.store.ListAccounts(ctx, arg)
 	if err != nil {
-		fmt.Println("error2")
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}	
