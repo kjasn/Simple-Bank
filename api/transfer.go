@@ -21,12 +21,14 @@ type transferRequest struct {
 func (server *Server) createTransfer(ctx *gin.Context) {
 	var req transferRequest
 	// get request from context
-	if err := ctx.ShouldBind(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
+	fmt.Println("===============")
 	fmt.Printf("%v", req)
+	fmt.Println("===============")
 
 	if !server.validAccount(ctx, req.FromAccountID, req.Currency) {
 		// no response here, response in validAccount function
