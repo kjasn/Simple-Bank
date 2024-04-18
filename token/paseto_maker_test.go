@@ -4,18 +4,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/kjasn/simple-bank/utils"
 	"github.com/stretchr/testify/require"
 )
 
 
-func TestJWTMaker(t *testing.T) {
-	// first create a JWTMaker 
-	maker, err := NewJWTMaker(utils.RandomString(minSecretKeySize))
+func TestPasetoMaker (t *testing.T) {
+	maker, err := NewPasetoMaker(utils.RandomString(minSecretKeySize))
 	require.NoError(t, err)
 
-	
 	username := utils.RandomOwner()
 	duration := time.Minute
 	issuedAt := time.Now()
@@ -36,7 +33,8 @@ func TestJWTMaker(t *testing.T) {
 }
 
 
-func TestExpiredJWTToken(t *testing.T) {
+
+func TestExpiredPasetoToken(t *testing.T) {
 	maker, err := NewJWTMaker(utils.RandomString(minSecretKeySize))
 	require.NoError(t, err)
 
@@ -50,26 +48,5 @@ func TestExpiredJWTToken(t *testing.T) {
 	require.Error(t, err)	// expected error
 	require.EqualError(t, err, ErrExpiredToken.Error())
 
-	require.Nil(t, payload)
-
-}
-
-
-func TestInvalidJWTTokenAlgNone(t *testing.T) {
-	payload, err := NewPayload(utils.RandomOwner(), time.Minute)
-	require.NoError(t, err)
-
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodNone, payload)
-	token, err := jwtToken.SignedString(jwt.UnsafeAllowNoneSignatureType)
-	require.NoError(t, err)
-	
-
-	maker, err := NewJWTMaker(utils.RandomString(minSecretKeySize))
-	require.NoError(t, err)
-
-	// verify token
-	payload, err = maker.VerifyToken(token)
-	require.Error(t, err)	// expected error
-	require.EqualError(t, err, ErrInvalidToken.Error())
 	require.Nil(t, payload)
 }
