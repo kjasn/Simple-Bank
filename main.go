@@ -12,6 +12,7 @@ import (
 
 
 
+
 func main() {
 	config, err := utils.LoadConfig(".")
 
@@ -26,7 +27,10 @@ func main() {
 	}
 
 	store := db.NewStore(conn)
-	server := api.NewServer(store)
+	server, err := api.NewServer(config, store)
+	if err != nil {
+		log.Fatal("Cannot not create server: ", err)
+	}
 
 	err = server.Start(config.ServerAddress)
 	if err != nil {

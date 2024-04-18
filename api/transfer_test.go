@@ -77,7 +77,7 @@ func TestCreateTransfer(t *testing.T) {
 			tc.buildStubs(store)
 
 			// start test and send request
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder() // create a recorder serve as ResponseWriter
 
 			url := "/transfers"

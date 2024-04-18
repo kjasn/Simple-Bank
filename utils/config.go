@@ -1,12 +1,18 @@
 package utils
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 // Config stores all configurations of the application load by viper
 type Config struct {
 	DBDriver 		string		`mapstructure:"DB_DRIVER"`
 	DSN 			string		`mapstructure:"DSN"`
 	ServerAddress 	string 		`mapstructure:"SERVER_ADDRESS"`
+	TokenSymmetryKey string	`mapstructure:"TOKEN_SYMMETRY_KEY"`
+	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
