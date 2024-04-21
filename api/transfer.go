@@ -2,11 +2,13 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	db "github.com/kjasn/simple-bank/db/sqlc"
+	"github.com/kjasn/simple-bank/token"
 )
 
 
@@ -26,18 +28,23 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println("===============")
-	fmt.Printf("%v", req)
-	fmt.Println("===============")
-
-	if !server.validAccount(ctx, req.FromAccountID, req.Currency) {
+	fromAccount, ok := server.validAccount(ctx, req.FromAccountID, req.Currency)
+	if !ok {
 		// no response here, response in validAccount function
 		return
 	}
-	
-	if !server.validAccount(ctx, req.ToAccountID, req.Currency) {
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Username != fromAccount.Owner {
+		err := errors.New("From account doesn't belong to the authenticate user")
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+	
+	if _, ok := server.validAccount(ctx, req.ToAccountID, req.Currency); !ok {
+		return
+	}
+
 	arg := db.TransferTxParams{
 		FromAccountID: req.FromAccountID,
 		ToAccountID: req.ToAccountID,
@@ -55,18 +62,18 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 }
 
 
-// check if the specific accounts with the passed ID existed and their currency match
-func (server *Server) validAccount(ctx *gin.Context, id int64, currency string) bool {
+// check if the specific accounts with the passed ID exists and their currency matches
+func (server *Server) validAccount(ctx *gin.Context, id int64, currency string) (db.Account, bool) {
 	account, err := server.store.GetAccount(ctx, id)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false
+			return account, false
 		}
 
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
+		return account, false
 	}
 
 	if account.Currency != currency {
@@ -74,9 +81,9 @@ func (server *Server) validAccount(ctx *gin.Context, id int64, currency string) 
 		id, account.Currency, currency)
 
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return false
+		return account, false
 	}
 
-	return true
+	return account, true
 
 }
