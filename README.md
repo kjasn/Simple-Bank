@@ -7,53 +7,66 @@ This project requires the following tools and libraries to be installed on your 
 ### Tools
 
 - **Docker**: Version 24.0.9-1
-    - Installation: Follow the official Docker installation guide for your operating system.
+
+  - Installation: Follow the official Docker installation guide for your operating system.
 
 - **PostgreSQL**: Version 12-alpine
-    - Installation: (install with docker) `docker pull postgres:12-alpine`
+
+  - Installation: (install with docker) `docker pull postgres:12-alpine`
 
 - **GNU Make**: Version 4.2.1
-    - Installation: Use your system's package manager. For example, on Ubuntu, you can use `sudo apt install make`.
 
-- **Migrate**: Version 4.17.0   using to build DB with sql files
-    - Installation: Use the following command to install Migrate: (official guide may occurs some mistakes: [issues#818](https://github.com/golang-migrate/migrate/issues/818#issuecomment-1270444615)) 
-    `1. wget http://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.deb`         
+  - Installation: Use your system's package manager. For example, on Ubuntu, you can use `sudo apt install make`.
+
+- **Migrate**: Version 4.17.0 using to build DB with sql files
+
+  - Installation: Use the following command to install Migrate: (official guide may occurs some mistakes: [issues#818](https://github.com/golang-migrate/migrate/issues/818#issuecomment-1270444615))
+    `1. wget http://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.deb`  
     `2. sudo dpkg -i migrate.linux-amd64.deb`
 
-- **Sqlc**: Version 1.25.0      using to generate CRUD code 
-    - Installation: `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`     
- 
-- **lib/pq**: Version 1.10.9    using to provide a driver that implements postgres
-    - Installation: `go get github.com/lib/pq`
+- **Sqlc**: Version 1.25.0 using to generate CRUD code
 
-- **testify** Version 1.9.0     using to check the unit test return
-    - Installation: `go get github.com/stretchr/testify`
+  - Installation: `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`
+
+- **lib/pq**: Version 1.10.9 using to provide a driver that implements postgres
+
+  - Installation: `go get github.com/lib/pq`
+
+- **testify** Version 1.9.0 using to check the unit test return
+
+  - Installation: `go get github.com/stretchr/testify`
 
 - **Gin** Version 1.9.1
-    - Installation: `go get -u github.com/gin-gonic/gin`
 
-- **Viper** Version 1.18.2      using to load configurations from files or environment variables
-    - Installation: `go get github.com/spf13/viper`
+  - Installation: `go get -u github.com/gin-gonic/gin`
+
+- **Viper** Version 1.18.2 using to load configurations from files or environment variables
+
+  - Installation: `go get github.com/spf13/viper`
 
 - **gomock** Version 1.6.0
-    - Installation: `go get github.com/golang/mock/mockgen@v1.6.0`
 
-## TODO
+  - Installation: `go get github.com/golang/mock/mockgen@v1.6.0`
 
-1. `deleteXxx` function for entries and transfers
-2. Search entries or transfers by account id AND how to automatically generate the unit tests.
-3. deal with the deadlock
+- **JWT** Version 3.2.0
 
+  - Installation: `go get github.com/dgrijalva/jwt-go`
+
+- **PASETO** Version 1.0.0
+
+  - Installation: `go get -u github.com/o1egl/paseto`
 
 ## Deal With Concurrency And Deadlock
 
 First, we add `FOR UPDATE` to function `GetAccount`:
+
 ```sql
 -- name: GetAccountForUpdate :one
-SELECT * FROM accounts 
+SELECT * FROM accounts
 WHERE id = $1 LIMIT 1
 FOR UPDATE;
-``` 
+```
+
 Then `make sqlc`, we get a new function `GetAccountForUpdate`, it ensures the correctness of concurrent data through **MUTUAL EXCLUSION**. But we another problem: `Error: deadlock detected` (when the number of concurrency is enough. Because I have set 2 concurrency goroutine, it passed).
 
 Second, to deal with deadlock. We can print logs while running and find what causes deadlock. Thus we can cleanly see which option causes deadlock.
@@ -69,7 +82,7 @@ SELECT blocked_locks.pid     AS blocked_pid,
         blocking_activity.query   AS current_statement_in_blocking_process
 FROM  pg_catalog.pg_locks         blocked_locks
 JOIN pg_catalog.pg_stat_activity blocked_activity  ON blocked_activity.pid = blocked_locks.pid
-JOIN pg_catalog.pg_locks         blocking_locks 
+JOIN pg_catalog.pg_locks         blocking_locks
     ON blocking_locks.locktype = blocked_locks.locktype
     AND blocking_locks.database IS NOT DISTINCT FROM blocked_locks.database
     AND blocking_locks.relation IS NOT DISTINCT FROM blocked_locks.relation
@@ -89,7 +102,7 @@ WHERE NOT blocked_locks.granted;
 The following query allow us to list all the locks in our database.
 
 ```sql
-SELECT 
+SELECT
         a.application_name,
         l.relation::regclass,
         l.transactionid,
@@ -105,7 +118,7 @@ WHERE a.application_name = 'psql'
 ORDER BY a.pid;
 ```
 
-We may find a select option from accounts table needs to get lock from other transaction that runs insert option on transfers table.  Back to schema:
+We may find a select option from accounts table needs to get lock from other transaction that runs insert option on transfers table. Back to schema:
 
 ```sql
 ALTER TABLE "transfers" ADD FOREIGN KEY ("from_account_id") REFERENCES "accounts" ("id");
@@ -116,41 +129,39 @@ The only connection between transfers table and accounts table is the **FOREIGN 
 
 ```sql
 -- name: GetAccountForUpdate :one
-SELECT * FROM accounts 
+SELECT * FROM accounts
 WHERE id = $1 LIMIT 1
 FOR NO KEY UPDATE;
 ```
 
-However, the above ways to deal with deadlock may still occurs some mistakes. 
-For example, there are 2 transactions, one transfers account1 to account2, and the other transfers account2 back to account1. 
+However, the above ways to deal with deadlock may still occurs some mistakes.
+For example, there are 2 transactions, one transfers account1 to account2, and the other transfers account2 back to account1.
 
 The order of update account's balance:
-- Transfer1: account1 - amount   -->   account2 + amount
-- Transfer2: account2 - amount   -->   account1 + amount
+
+- Transfer1: account1 - amount --> account2 + amount
+- Transfer2: account2 - amount --> account1 + amount
 
 So, before each of them commit, they hold a exclusive lock which blocks the other.
 
 The best way is to avoid deadlock by making sure that the transfers are processed **in an consistent order**. Like we can enable each transfer update account with smaller ID first.
 
-
 ## About Transaction Isolation Level
-
 
 The following table is copy from [postgressql document](https://www.postgresql.org/docs/current/transaction-iso.html)
 
-|Isolation Level    |Dirty Read	|Nonrepeatable Read	|Phantom Read	|Serialization Anomaly|
-|:-:|:-:|:-:|:-:|:-:|
-|Read uncommitted	|**Allowed, but not in PG**	|Possible|	Possible	|Possible|
-|Read committed	|Not possible	|Possible	|Possible	|Possible|
-|Repeatable read	|Not possible	|Not possible|	**Allowed, but not in PG**	|Possible|
-|Serializable	|Not possible	|Not possible   |Not possible	|Not possible|
+| Isolation Level  |         Dirty Read         | Nonrepeatable Read |        Phantom Read        | Serialization Anomaly |
+| :--------------: | :------------------------: | :----------------: | :------------------------: | :-------------------: |
+| Read uncommitted | **Allowed, but not in PG** |      Possible      |          Possible          |       Possible        |
+|  Read committed  |        Not possible        |      Possible      |          Possible          |       Possible        |
+| Repeatable read  |        Not possible        |    Not possible    | **Allowed, but not in PG** |       Possible        |
+|   Serializable   |        Not possible        |    Not possible    |        Not possible        |     Not possible      |
 
 Read uncommitted is the **SAME** as read committed(default level) **in postgres**. lBasically, there are 3 isolation levels in postgres.
 
 Postgres uses **dependencies checking mechanism** to prevent the **serialization anomaly**, while MySQL uses **locking mechanism**.
 
 [More details in my blog](https://kjasn.github.io/2024/03/18/Transaction-isolation-level-of-DB/)...
-
 
 ## UnitTest in Mock
 
@@ -167,13 +178,18 @@ We set users table as follows:
 - Each user can have many accounts with **different** currency.
 - Each email address can only bind one user, it means email field is unique.
 
-
 ## Bcrypt Password
 
-Basically, we do not save plain password text, instead we prefer to save encrypted password. Here we use bcrypt to generate hashed password. 
+Basically, we do not save plain password text, instead we prefer to save encrypted password. Here we use bcrypt to generate hashed password.
 
 In this encrypt algorithm, we use a **random salt** and a cost(the iterate times) to encrypt the provided password:
 
 1. Although the provided passwords are the same, it can generates different hash value.
 
 2. For comparing and checking password, it use the cost and the same salt from the hash value to encrypt the provided password, then check if the new hash value equals the provided one.
+
+## Authentication & Authorization
+
+We can make authentication via a specific middleware, and register is for a router group which contain all api that need be authorized before pass to call real handlers.
+
+For authorization, it is API specific.
