@@ -29,5 +29,7 @@ server:
 	go run main.go
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/kjasn/simple-bank/db/sqlc Store
+build:
+	docker build --network host -t simplebank:latest .
 
-.PHONY: postgres terminate createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test start psql server
+.PHONY: postgres terminate createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test start psql server build
