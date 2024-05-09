@@ -193,3 +193,10 @@ In this encrypt algorithm, we use a **random salt** and a cost(the iterate times
 We can make authentication via a specific middleware, and register is for a router group which contain all api that need be authorized before pass to call real handlers.
 
 For authorization, it is API specific.
+
+## User Session Management
+
+We should not use JWT or PASETO as a token-based authentication for **long session**.
+Because of the **stateless design**, those tokens are **not stored in database**, when they are leaked, there is no way to revoke them. Therefore we must **set their lifetime short enough**(about 10-15 min). But if we only use access tokens, when they are expired, users need to frequently login to get new tokens. It is a terrible user experience.
+
+Now we can additionally use a refresh token to maintain a **stateful session** on the server, and the client can use it with a long valid duration to request a new access token when it is expired. The refresh token will be **stored in a session table in the database**, so we can revoke it easily and its lifetime can be much longer(such as several days).
