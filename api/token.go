@@ -11,7 +11,7 @@ import (
 
 
 type renewAccessTokenRequest struct {
-	RefreshToken string `json:"refresh_token" binding:"required,alphanum"`
+	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
 type renewAccessTokenResponse struct {
@@ -22,16 +22,14 @@ type renewAccessTokenResponse struct {
 
 func (server *Server) renewAccessToken(ctx *gin.Context) {
 	var req renewAccessTokenRequest
-
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	
 	// verify refresh token
 	refreshPayload, err := server.tokenMaker.VerifyToken(req.RefreshToken)
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}

@@ -29,9 +29,11 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 	}
 
 	server := &Server{
+		config:     config,
 		store: store,
 		tokenMaker: maker,
 	}
+
 
 	// set up router
 	server.setUpRouter()
