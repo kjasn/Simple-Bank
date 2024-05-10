@@ -6,55 +6,62 @@ This project requires the following tools and libraries to be installed on your 
 
 ### Tools
 
-- **Docker**: Version 24.0.9-1
+- **Docker**: (v24.0.9-1)
 
   - Installation: Follow the official Docker installation guide for your operating system.
 
-- **PostgreSQL**: Version 12-alpine
+- **PostgreSQL**: (version: 12-alpine)
 
   - Installation: (install with docker) `docker pull postgres:12-alpine`
 
-- **GNU Make**: Version 4.2.1
+- **GNU Make**: (v4.2.1)
 
   - Installation: Use your system's package manager. For example, on Ubuntu, you can use `sudo apt install make`.
 
-- **Migrate**: Version 4.17.0 using to build DB with sql files
+- **Migrate**: (v4.17.0) Using to build DB with sql files
 
   - Installation: Use the following command to install Migrate: (official guide may occurs some mistakes: [issues#818](https://github.com/golang-migrate/migrate/issues/818#issuecomment-1270444615))
     `1. wget http://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.deb`  
     `2. sudo dpkg -i migrate.linux-amd64.deb`
 
-- **Sqlc**: Version 1.25.0 using to generate CRUD code
+- **Sqlc**: (v1.25.0) Using to generate CRUD code
 
   - Installation: `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`
 
-- **lib/pq**: Version 1.10.9 using to provide a driver that implements postgres
+- **lib/pq**: (v1.10.9) Using to provide a driver that implements postgres
 
   - Installation: `go get github.com/lib/pq`
 
-- **testify** Version 1.9.0 using to check the unit test return
+- **testify** (v1.9.0) Using to check the unit test return
 
   - Installation: `go get github.com/stretchr/testify`
 
-- **Gin** Version 1.9.1
+- **Gin** (v1.9.1)
 
   - Installation: `go get -u github.com/gin-gonic/gin`
 
-- **Viper** Version 1.18.2 using to load configurations from files or environment variables
+- **Viper** (v1.18.2) Using to load configurations from files or environment variables
 
   - Installation: `go get github.com/spf13/viper`
 
-- **gomock** Version 1.6.0
+- **gomock** (v1.6.0)
 
   - Installation: `go get github.com/golang/mock/mockgen@v1.6.0`
 
-- **JWT** Version 3.2.0
+- **JWT** (v3.2.0)
 
   - Installation: `go get github.com/dgrijalva/jwt-go`
 
-- **PASETO** Version 1.0.0
+- **PASETO** (v1.0.0)
 
   - Installation: `go get -u github.com/o1egl/paseto`
+
+- **dbdocs** Using for create web-based documentation.
+
+  - Installation: `npm install -g dbdocs`
+
+- **dbml/cli** Using for generate db schema from dbml.
+  - Installation: `npm install -g @dbml/cli`
 
 ## Deal With Concurrency And Deadlock
 
