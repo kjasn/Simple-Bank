@@ -22,3 +22,6 @@ go.work
 
 # configuration file
 .vscode
+
+# log file
+*.log

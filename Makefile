@@ -1,3 +1,5 @@
+DB_URL=postgresql://root:8520@localhost:5432/simple_bank?sslmode=disable
+
 postgres:
 	docker run --name postgres12 --network bank-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=8520 -d postgres:12-alpine
 terminate:
@@ -10,14 +12,14 @@ dropdb:
 	docker exec -it postgres12 dropdb simple_bank
 
 migrateup:
-	migrate -path db/migration -database "postgresql://root:8520@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path db/migration -database "$(DB_URL)" -verbose up
 migrateup1:
-	migrate -path db/migration -database "postgresql://root:8520@localhost:5432/simple_bank?sslmode=disable" -verbose up 1
+	migrate -path db/migration -database "$(DB_URL)" -verbose up 1
 
 migratedown:
-	migrate -path db/migration -database "postgresql://root:8520@localhost:5432/simple_bank?sslmode=disable" -verbose down
+	migrate -path db/migration -database "$(DB_URL)" -verbose down
 migratedown1:
-	migrate -path db/migration -database "postgresql://root:8520@localhost:5432/simple_bank?sslmode=disable" -verbose down 1
+	migrate -path db/migration -database "$(DB_URL)" -verbose down 1
 
 sqlc:
 	sqlc generate
@@ -33,5 +35,9 @@ build:
 	docker build --network host -t simplebank:latest .
 dcrun:
 	docker run --name simplebank --network bank-network -p 8080:8080 -e DSN="postgresql://root:8520@postgres12:5432/simple_bank?sslmode=disable" simplebank:latest
+dbdocs:
+	dbdocs build doc/db.dbml
+db_schema:
+	dbml2sql --postgres -o doc/schema.sql doc/db.dbml
 
-.PHONY: postgres terminate createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test start psql server build dcrun
+.PHONY: postgres terminate createdb dropdb migrateup migrateup1 migratedown migratedown1 sqlc test start psql server build dcrun db_schema dbdocs
