@@ -19,16 +19,12 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-
-
-
 func main() {
 	config, err := utils.LoadConfig(".")
 
 	if err != nil {
 		log.Fatal("Cannot load config:", err)
 	}
-
 
 	conn, err := sql.Open(config.DBDriver, config.DSN)
 	if err != nil {
@@ -38,7 +34,9 @@ func main() {
 
 	go runGatewayServer(config, store)
 	runGrpcServer(config, store)
+
 }
+
 
 func runGrpcServer(config utils.Config, store db.Store) {
 	server, err := gapi.NewServer(config, store)
@@ -46,9 +44,10 @@ func runGrpcServer(config utils.Config, store db.Store) {
 		log.Fatal("Cannot not create gRPC server: ", err)
 	}
 
+	// create grpc server instance
 	grpcServer := grpc.NewServer()
 
-	// register server
+	// register custom server into grpc server
 	pb.RegisterSimpleBankServer(grpcServer, server)
 
 	// create a reflection
@@ -95,6 +94,10 @@ func runGatewayServer(config utils.Config, store db.Store) {
 	mux := http.NewServeMux()
 	// rerouter to gRPC mux
 	mux.Handle("/", grpcMux)
+
+	// create file server
+	fs := http.FileServer(http.Dir("./doc/swagger"))
+	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
 
 	// listen and start
 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
