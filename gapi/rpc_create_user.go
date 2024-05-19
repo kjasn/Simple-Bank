@@ -6,13 +6,20 @@ import (
 	db "github.com/kjasn/simple-bank/db/sqlc"
 	"github.com/kjasn/simple-bank/pb"
 	"github.com/kjasn/simple-bank/utils"
+	"github.com/kjasn/simple-bank/val"
 	"github.com/lib/pq"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+	// first validate request parameters
+	violations := validateCreateUserRequest(req)
+	if violations != nil {
+		return nil, invalidArgumentError(violations)
+	} 
 
 	hashedPassword, err := utils.HashPassword(req.GetPassword())
 	if err != nil {
@@ -43,4 +50,25 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	}
 
 	return ret, nil
+}
+
+
+func validateCreateUserRequest(req *pb.CreateUserRequest) (violation []*errdetails.BadRequest_FieldViolation){
+	if err := val.ValidateUsername(req.GetUsername()); err != nil {
+		violation = append(violation, fieldViolation("username", err))
+	}
+
+	if err := val.ValidatePassword(req.GetPassword()); err != nil {
+		violation = append(violation, fieldViolation("password", err))
+	}
+
+	if err := val.ValidateFullName(req.GetFullName()); err != nil {
+		violation = append(violation, fieldViolation("full_name", err))
+	}
+
+	if err := val.ValidateEmail(req.GetEmail()); err != nil {
+		violation = append(violation, fieldViolation("email", err))
+	}
+
+	return violation
 }
