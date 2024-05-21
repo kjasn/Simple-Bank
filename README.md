@@ -61,7 +61,17 @@ This project requires the following tools and libraries to be installed on your 
   - Installation: `npm install -g dbdocs`
 
 - **dbml/cli** Using for generate db schema from dbml.
+
   - Installation: `npm install -g @dbml/cli`
+
+- **protobuf complier** (libprotoc 27.0-rc2)
+
+  - Installation: `apt install -y protobuf-compiler`
+    > For generate code, we need install 2 plugins, details in [gRPC documentation](https://grpc.io/docs/languages/go/quickstart/).
+    > When it occurs some errors, like Timestamp not found, [here](https://stackoverflow.com/questions/56031098/protobuf-timestamp-not-found) is a way to solve.
+
+- **statik**
+  - Installation: `go get github.com/rakyll/statik`
 
 ## Deal With Concurrency And Deadlock
 
@@ -74,7 +84,7 @@ WHERE id = $1 LIMIT 1
 FOR UPDATE;
 ```
 
-Then `make sqlc`, we get a new function `GetAccountForUpdate`, it ensures the correctness of concurrent data through **MUTUAL EXCLUSION**. But we another problem: `Error: deadlock detected` (when the number of concurrency is enough. Because I have set 2 concurrency goroutine, it passed).
+Then `make sqlc`, we get a new function `GetAccountForUpdate`, it ensures the correctness of concurrent data through **MUTUAL EXCLUSION**. But we get another problem: `Error: deadlock detected` (when the number of concurrency is enough. Because I only set 2 concurrency goroutine, it passed).
 
 Second, to deal with deadlock. We can print logs while running and find what causes deadlock. Thus we can cleanly see which option causes deadlock.
 
@@ -132,7 +142,7 @@ ALTER TABLE "transfers" ADD FOREIGN KEY ("from_account_id") REFERENCES "accounts
 ALTER TABLE "transfers" ADD FOREIGN KEY ("to_account_id") REFERENCES "accounts" ("id");
 ```
 
-The only connection between transfers table and accounts table is the **FOREIGN KEY CONSTRAINT**. Each update of accounts table may cause it acquire lock from transfers table. Now we know our option will not update account id, so we should tell postgres12 this. Then we change to `FOR NO KEY UPDATE`, and `make sqlc`
+The only connection between transfers table and accounts table is the **FOREIGN KEY CONSTRAINT**. Each update of accounts table may cause it acquires lock from transfers table. Now we know our option will not update account id, so we should tell postgres12 this. Then we change to `FOR NO KEY UPDATE`, and `make sqlc`
 
 ```sql
 -- name: GetAccountForUpdate :one
@@ -142,7 +152,7 @@ FOR NO KEY UPDATE;
 ```
 
 However, the above ways to deal with deadlock may still occurs some mistakes.
-For example, there are 2 transactions, one transfers account1 to account2, and the other transfers account2 back to account1.
+For example, there are 2 transactions, one transfers money from account1 to account2, and the other transfers from account2 back to account1.
 
 The order of update account's balance:
 
@@ -174,7 +184,9 @@ Postgres uses **dependencies checking mechanism** to prevent the **serialization
 
 Mock store is separated for each test case.
 
-## Add USERS Table
+\#TODO
+
+## Add Users Table
 
 Instead of resetting the old database and create a new one then migrate data to it, we are supposed to update it with a new edition.
 
@@ -185,9 +197,9 @@ We set users table as follows:
 - Each user can have many accounts with **different** currency.
 - Each email address can only bind one user, it means email field is unique.
 
-## Bcrypt Password
+## Encrypt Password
 
-Basically, we do not save plain password text, instead we prefer to save encrypted password. Here we use bcrypt to generate hashed password.
+Basically, we do not save plain password text, instead we prefer to save encrypted password. Here we use `bcrypt` to generate hashed password.
 
 In this encrypt algorithm, we use a **random salt** and a cost(the iterate times) to encrypt the provided password:
 
@@ -201,9 +213,19 @@ We can make authentication via a specific middleware, and register is for a rout
 
 For authorization, it is API specific.
 
+\#TODO
+
 ## User Session Management
 
 We should not use JWT or PASETO as a token-based authentication for **long session**.
 Because of the **stateless design**, those tokens are **not stored in database**, when they are leaked, there is no way to revoke them. Therefore we must **set their lifetime short enough**(about 10-15 min). But if we only use access tokens, when they are expired, users need to frequently login to get new tokens. It is a terrible user experience.
 
 Now we can additionally use a refresh token to maintain a **stateful session** on the server, and the client can use it with a long valid duration to request a new access token when it is expired. The refresh token will be **stored in a session table in the database**, so we can revoke it easily and its lifetime can be much longer(such as several days).
+
+## gRPC And HTTP Serve
+
+gRPC is famous for its high performance which is very suitable for microservice and mobile application, so we can replace HTTP JSON APIs with it. But sometimes we might still provide normal HTTP JSON APIs to client.Thus we need an idea to serve both HTTP JSON APIs and gRPC, and that is gRPC gateway.
+
+\#TODO
+
+Since **the first server we run will block the second one**, so we need run them in different go routine.
