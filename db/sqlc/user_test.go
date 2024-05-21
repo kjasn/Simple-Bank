@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
@@ -58,3 +59,62 @@ func TestGetUser(t *testing.T) {
 	require.WithinDuration(t, user1.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
 }
 
+
+func TestUpdateUser(t *testing.T) {
+	oldUser := createRandomUser(t)
+	// update email
+	newEmail := utils.RandomEmail()
+	updatedUser, err := testQueries.UpdateUser(context.Background(), UpdateUserParams{
+		Email: sql.NullString{
+			String: newEmail,
+			Valid: true,
+		},
+		Username: oldUser.Username,
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedUser)
+	require.Equal(t, oldUser.Username, updatedUser.Username)
+	require.Equal(t, oldUser.HashedPassword, updatedUser.HashedPassword)
+	require.Equal(t, oldUser.FullName, updatedUser.FullName)
+	require.Equal(t, newEmail, updatedUser.Email)
+
+
+	// update full name
+	newFullName := utils.RandomOwner()
+	updatedUser, err = testQueries.UpdateUser(context.Background(), UpdateUserParams{
+		FullName: sql.NullString{
+			String: newFullName,
+			Valid: true,
+		},
+		Username: oldUser.Username,
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedUser)
+	require.Equal(t, oldUser.Username, updatedUser.Username)
+	require.Equal(t, oldUser.HashedPassword, updatedUser.HashedPassword)
+	require.Equal(t, newFullName, updatedUser.FullName)
+	require.Equal(t, newEmail, updatedUser.Email)
+
+
+	// update password
+	newPassword := utils.RandomString(6)
+	newHashedPassword, err := utils.HashPassword(newPassword)
+	require.NoError(t, err)
+
+	updatedUser, err = testQueries.UpdateUser(context.Background(), UpdateUserParams{
+		HashedPassword: sql.NullString{
+			String: newHashedPassword,
+			Valid: true,
+		},
+		Username: oldUser.Username,
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedUser)
+	require.Equal(t, oldUser.Username, updatedUser.Username)
+	require.Equal(t, newHashedPassword, updatedUser.HashedPassword)
+	require.Equal(t, newFullName, updatedUser.FullName)
+	require.Equal(t, newEmail, updatedUser.Email)
+}

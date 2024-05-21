@@ -7,6 +7,9 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/kjasn/simple-bank/api"
 	db "github.com/kjasn/simple-bank/db/sqlc"
@@ -21,6 +24,19 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+func runDBMigration(migrationURL string, postgresDNS string) {
+	migration, err := migrate.New(migrationURL, postgresDNS)
+	if err != nil {
+		log.Fatal("cannot create new migrate instance: ", err)
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange { // ignore no change
+		log.Fatal("cannot run migration up: ", err)
+	}
+
+	log.Println("run migrate successfully")
+}
+
 func main() {
 	config, err := utils.LoadConfig(".")
 
@@ -32,6 +48,9 @@ func main() {
 	if err != nil {
 		log.Fatal("Fail to connect to the db:", err)
 	}
+
+	// 
+	runDBMigration(config.MigrationURL, config.DSN)
 	store := db.NewStore(conn)
 
 	go runGatewayServer(config, store)

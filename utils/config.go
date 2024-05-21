@@ -8,8 +8,9 @@ import (
 
 // Config stores all configurations of the application load by viper
 type Config struct {
-	DBDriver 		string					`mapstructure:"DB_DRIVER"`
-	DSN 			string					`mapstructure:"DSN"`
+	DBDriver 			string				`mapstructure:"DB_DRIVER"`
+	DSN 				string				`mapstructure:"DSN"`
+	MigrationURL 		string				`mapstructure:"MIGRATION_URL"`
 	HTTPServerAddress 	string 				`mapstructure:"HTTP_SERVER_ADDRESS"`
 	GRPCServerAddress 	string 				`mapstructure:"GRPC_SERVER_ADDRESS"`
 	TokenSymmetryKey 	string				`mapstructure:"TOKEN_SYMMETRY_KEY"`
