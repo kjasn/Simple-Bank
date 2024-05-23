@@ -71,7 +71,8 @@ UPDATE users
 SET 
   hashed_password = COALESCE($1, hashed_password), 
   full_name = COALESCE($2, full_name),
-  email = COALESCE($3, email)
+  email = COALESCE($3, email), 
+  password_changed_at = now()
 WHERE username = $4
 RETURNING username, hashed_password, full_name, email, password_changed_at, created_at
 `
