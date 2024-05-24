@@ -3,6 +3,7 @@ package gapi
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	db "github.com/kjasn/simple-bank/db/sqlc"
 	"github.com/kjasn/simple-bank/pb"
@@ -13,10 +14,23 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	authorizationHeader = "authorization"
+	supportedAuthorizationType = "bearer"
+)
 
 func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
-	// TODO: Add authorization
-	// first validate request parameters
+	// check payload first
+	authPayload, err := server.authorization(ctx)
+	if err != nil {
+		return nil, unAuthenticatedError(err)
+	}
+	
+	if authPayload.Username != req.GetUsername() {
+		return nil, fmt.Errorf("can not update other's info")
+	}
+
+	// validate request parameters
 	violations := validateUpdateUserRequest(req)
 	if violations != nil {
 		return nil, invalidArgumentError(violations)
