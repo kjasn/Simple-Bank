@@ -42,12 +42,10 @@ type ResponseRecorder struct {
 	http.ResponseWriter
 	StatusCode int
 	Body []byte
-	StatusText string
 }
 
 func (rec *ResponseRecorder) WriteHeader(statusCode int) {
 	rec.StatusCode = statusCode
-	rec.StatusText = http.StatusText(statusCode)
 	rec.ResponseWriter.WriteHeader(statusCode)
 }
 
@@ -63,7 +61,6 @@ func HttpLogger (handler http.Handler) http.Handler {
 		rec := &ResponseRecorder{
 			ResponseWriter: rsp,
 			StatusCode: http.StatusOK,
-			StatusText: "OK",
 		}
 		handler.ServeHTTP(rec, req)
 		duration := time.Since(startTime)
@@ -78,8 +75,7 @@ func HttpLogger (handler http.Handler) http.Handler {
 		Str("Method", req.Method).
 		Str("Path", req.RequestURI).
 		Int("StatusCode", rec.StatusCode).
-		// Str("StatusText", http.StatusText(rec.StatusCode)).
-		Str("StatusText", rec.StatusText).
+		Str("StatusText", http.StatusText(rec.StatusCode)).
 		Dur("Duration", duration).
 		Msg("Received a HTTP request")
 	})
