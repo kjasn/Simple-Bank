@@ -71,7 +71,11 @@ This project requires the following tools and libraries to be installed on your 
     > When it occurs some errors, like Timestamp not found, [here](https://stackoverflow.com/questions/56031098/protobuf-timestamp-not-found) is a way to solve.
 
 - **statik**
+
   - Installation: `go get github.com/rakyll/statik`
+
+- **zerolog**
+  - Installation: `go get -u github.com/rs/zerolog/log`
 
 ## Deal With Concurrency And Deadlock
 
