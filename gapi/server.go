@@ -7,6 +7,7 @@ import (
 	"github.com/kjasn/simple-bank/pb"
 	"github.com/kjasn/simple-bank/token"
 	"github.com/kjasn/simple-bank/utils"
+	"github.com/kjasn/simple-bank/worker"
 )
 
 // Server servers gRPC requests
@@ -15,11 +16,12 @@ type Server struct {
 	config utils.Config
 	store db.Store
 	tokenMaker token.Maker
+	distributor worker.TaskDistributor
 }
 
 
 // NewServer create a new gRPC server and setup routing
-func NewServer(config utils.Config, store db.Store) (*Server, error) {
+func NewServer(config utils.Config, store db.Store, distributor worker.TaskDistributor) (*Server, error) {
 
 	maker, err := token.NewPasetoMaker(config.TokenSymmetryKey)	// or change to JWT
 	if err != nil {
@@ -30,6 +32,7 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 		config:     config,
 		store: store,
 		tokenMaker: maker,
+		distributor: distributor,
 	}
 
 	return server, nil
