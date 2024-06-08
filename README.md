@@ -1,5 +1,7 @@
 # Simple-Bank
 
+[README-zh](./README-zh.md)
+
 ## Requirements
 
 This project requires the following tools and libraries to be installed on your system. Please ensure you have the specified versions or later.
@@ -75,7 +77,12 @@ This project requires the following tools and libraries to be installed on your 
   - Installation: `go get github.com/rakyll/statik`
 
 - **zerolog**
+
   - Installation: `go get -u github.com/rs/zerolog/log`
+
+- **asynq**
+
+  - Installation: `go get -u github.com/hibiken/asynq`
 
 ## Deal With Concurrency And Deadlock
 
@@ -233,3 +240,11 @@ gRPC is famous for its high performance which is very suitable for microservice 
 \#TODO
 
 Since **the first server we run will block the second one**, so we need run them in different go routine.
+
+## Asynchronous Processing
+
+For synchronous APIs, when clients send request to the server, the request **must be processed immediately by the server and the result will be return synchronously**. But sometimes when the request can not to be processed immediately, maybe it **takes long time to complete** and we do not want to force clients to wait, OR maybe we just want to **schedule it to be execute in the future**. Thus we need a mechanism to process some kinds of tasks asynchronously.
+
+Firstly, we may think about using go routine to process in the background because it is simple to implement. But the drawback is the task live inside in the process's memory. If the server goes down, the unprocessed tasks may be lost.
+
+Then using message queue will be a better design. Redis is an efficient message queue, which stores its data both in memory and persistent storage. With its high-concurrency and reliability, our tasks will not be lost.
