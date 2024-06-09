@@ -60,7 +60,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		asynq.Queue(worker.QueueMain),
 	}
 	if err = server.distributor.DistributeTaskSendVerifyEmail(ctx, payload, opts...); err != nil {
-		return nil, status.Errorf(codes.Internal, "fail to send verify email: %w", err)
+		return nil, status.Errorf(codes.Internal, "fail to send verify email: %s", err)
 	}
 
 	ret := &pb.CreateUserResponse{
