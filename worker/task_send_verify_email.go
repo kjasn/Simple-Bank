@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/hibiken/asynq"
+	"github.com/kjasn/simple-bank/mail"
+	"github.com/kjasn/simple-bank/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -63,8 +65,28 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(
         return fmt.Errorf("failed to get user from database: %w", err)
 	}
 
-	// TODO: send email to user
-	
+	config, err := utils.LoadConfig("../")
+	if err != nil {
+        return fmt.Errorf("failed to load configuration file: %w", err)
+	}
+
+	netEaseMail := mail.NewNetEaseMailSender(
+		config.EmailSenderName, 
+		config.EmailSenderAddress, 
+		config.EmailSenderPassword,
+	)		
+
+	subject := "A Test Email"
+	content := `
+	<h1> Hello World </h1>
+	<p> This is a test mail </p>
+	`
+	to := []string{"mail-address@example.com"}
+	err = netEaseMail.SendMail(subject, content, to, nil, nil, nil)
+	if err != nil {
+        return fmt.Errorf("failed to send email: %w", err)
+	}
+
 	// log out
 	log.Info().Str("type", task.Type()).Bytes("payload", task.Payload()).
 		Str("email", user.Email).Msg("processed task")

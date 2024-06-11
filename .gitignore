@@ -26,6 +26,7 @@ go.work
 
 # log file
 *.log
+static/
 
 # TODO
 Dockerfile
