@@ -7,7 +7,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSenderMail(t *testing.T) {
+func TestSendEmail(t *testing.T) {
+	// skip test send email
+	if testing.Short() {
+		t.Skip()
+	}
+
 	config, err := utils.LoadConfig("../")
 	require.NoError(t, err)
 

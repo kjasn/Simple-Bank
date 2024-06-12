@@ -22,7 +22,7 @@ migratedown1:
 sqlc:
 	sqlc generate
 test:
-	go test -v -cover ./...
+	go test -v -cover -short ./...
 psql:
 	docker exec -it postgres12 psql -U root -d simple_bank
 server:
