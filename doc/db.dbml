@@ -12,11 +12,22 @@ Table users as U {
   hashed_password varchar [not null]
   full_name varchar [not null]
   email varchar [unique, not null]
+  is_email_verified bool [not null, default: false]
   // if never changed, default zero value ( Z means time zone )
   password_changed_at timestamptz [not null, default: '0001-01-01 00:00:00Z'] 
   created_at timestamptz [not null, default: `now()`]
 }
 
+Table verify_emails {
+  id bigserial [pk]
+  secret_code char(6) [not null]
+  username varchar [ref: > U.username, not null]
+  email varchar [not null]
+  is_used bool [not null, default: false]
+  created_at timestamptz [not null, default: `now()`]
+  // set expire time for security
+  expires_at timestamptz [not null, default: `now() + interval '15 minutes'`]
+}
 
 Table accounts as A {
   id bigserial [pk]
