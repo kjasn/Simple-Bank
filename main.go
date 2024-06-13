@@ -19,6 +19,7 @@ import (
 	db "github.com/kjasn/simple-bank/db/sqlc"
 	_ "github.com/kjasn/simple-bank/doc/statik"
 	"github.com/kjasn/simple-bank/gapi"
+	"github.com/kjasn/simple-bank/mail"
 	"github.com/kjasn/simple-bank/pb"
 	"github.com/kjasn/simple-bank/utils"
 	"github.com/kjasn/simple-bank/worker"
@@ -66,15 +67,20 @@ func main() {
 	redisOpt := asynq.RedisClientOpt{Addr: config.RedisAddress}
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
-	go runTaskProcessor(redisOpt, store)
+	mailer := mail.NewNetEaseMailSender(
+		config.EmailSenderName, 
+		config.EmailSenderAddress, 
+		config.EmailSenderPassword,
+	)
+	go runTaskProcessor(redisOpt, store, mailer)
 	go runGatewayServer(config, store, taskDistributor)
 	runGrpcServer(config, store, taskDistributor)
 
 }
 
 
-func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store)
+func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, mailer mail.EmailSender) {
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
 
 	log.Info().Msg("start task processor...")
 	if err := taskProcessor.Start(); err != nil {

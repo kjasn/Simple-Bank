@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hibiken/asynq"
-	"github.com/kjasn/simple-bank/mail"
+	db "github.com/kjasn/simple-bank/db/sqlc"
 	"github.com/kjasn/simple-bank/utils"
 	"github.com/rs/zerolog/log"
 )
@@ -65,26 +65,28 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(
         return fmt.Errorf("failed to get user from database: %w", err)
 	}
 
-	config, err := utils.LoadConfig("../")
+
+	verifyEmail, err := processor.store.CreateVerifyEmail(ctx, db.CreateVerifyEmailParams{
+		SecretCode: utils.RandomString(6),
+		Username: user.Username,
+		Email: user.Email,
+	})
 	if err != nil {
-        return fmt.Errorf("failed to load configuration file: %w", err)
+        return fmt.Errorf("failed to create verify email: %w", err)
 	}
 
-	netEaseMail := mail.NewNetEaseMailSender(
-		config.EmailSenderName, 
-		config.EmailSenderAddress, 
-		config.EmailSenderPassword,
-	)		
+	subject := "Verify Email"
+	verifyUrl := fmt.Sprintf("http://simple-bank.org/verify_email?id=%d&secret_code=%s", verifyEmail.ID, verifyEmail.SecretCode)
 
-	subject := "A Test Email"
-	content := `
-	<h1> Hello World </h1>
-	<p> This is a test mail </p>
-	`
-	to := []string{"mail-address@example.com"}
-	err = netEaseMail.SendMail(subject, content, to, nil, nil, nil)
+	content := fmt.Sprintf(`<h1> Hello %s, welcome to simple bank ! </h1>
+	Please <a href="%s"> click here </a> to verify your email address. </br>
+	If you did not register a new account, please ignore it! </br>
+	`, user.Username, verifyUrl)
+	to := []string{user.Email}
+
+	err = processor.mailer.SendMail(subject, content, to, nil, nil, nil)
 	if err != nil {
-        return fmt.Errorf("failed to send email: %w", err)
+        return fmt.Errorf("failed to send verify email: %w", err)
 	}
 
 	// log out

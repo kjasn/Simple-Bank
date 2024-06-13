@@ -20,7 +20,7 @@ Table users as U {
 
 Table verify_emails {
   id bigserial [pk]
-  secret_code char(6) [not null]
+  secret_code char(32) [not null]
   username varchar [ref: > U.username, not null]
   email varchar [not null]
   is_used bool [not null, default: false]
