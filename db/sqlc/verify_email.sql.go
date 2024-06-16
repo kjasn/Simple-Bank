@@ -9,24 +9,24 @@ import (
 	"context"
 )
 
-const createVerifyEmail = `-- name: CreateVerifyEmail :one
-INSERT INTO verify_emails (
-  secret_code,  
-  username, 
-  email 
-) VALUES (
-    $1, $2, $3
-) RETURNING id, secret_code, username, email, is_used, created_at, expires_at
+const updateVerifyEmail = `-- name: UpdateVerifyEmail :one
+UPDATE verify_emails 
+SET 
+	is_used = true
+WHERE id = $1 
+	AND secret_code = $2
+	AND is_used = FALSE
+	AND expired_at > now()
+RETURNING id, secret_code, username, email, is_used, created_at, expired_at
 `
 
-type CreateVerifyEmailParams struct {
+type UpdateVerifyEmailParams struct {
+	ID         int64  `json:"id"`
 	SecretCode string `json:"secret_code"`
-	Username   string `json:"username"`
-	Email      string `json:"email"`
 }
 
-func (q *Queries) CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error) {
-	row := q.db.QueryRowContext(ctx, createVerifyEmail, arg.SecretCode, arg.Username, arg.Email)
+func (q *Queries) UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmail, error) {
+	row := q.db.QueryRowContext(ctx, updateVerifyEmail, arg.ID, arg.SecretCode)
 	var i VerifyEmail
 	err := row.Scan(
 		&i.ID,
@@ -35,7 +35,38 @@ func (q *Queries) CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailPa
 		&i.Email,
 		&i.IsUsed,
 		&i.CreatedAt,
-		&i.ExpiresAt,
+		&i.ExpiredAt,
+	)
+	return i, err
+}
+
+const verifyEmail = `-- name: VerifyEmail :one
+INSERT INTO verify_emails (
+	secret_code,  
+	username, 
+	email 
+) VALUES (
+	$1, $2, $3
+) RETURNING id, secret_code, username, email, is_used, created_at, expired_at
+`
+
+type VerifyEmailParams struct {
+	SecretCode string `json:"secret_code"`
+	Username   string `json:"username"`
+	Email      string `json:"email"`
+}
+
+func (q *Queries) VerifyEmail(ctx context.Context, arg VerifyEmailParams) (VerifyEmail, error) {
+	row := q.db.QueryRowContext(ctx, verifyEmail, arg.SecretCode, arg.Username, arg.Email)
+	var i VerifyEmail
+	err := row.Scan(
+		&i.ID,
+		&i.SecretCode,
+		&i.Username,
+		&i.Email,
+		&i.IsUsed,
+		&i.CreatedAt,
+		&i.ExpiredAt,
 	)
 	return i, err
 }

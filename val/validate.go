@@ -56,3 +56,14 @@ func ValidateEmail(email string) error {
 func ValidatePassword(password string) error {
 	return ValidateString(password, 6, 50)
 }
+
+func ValidateSecretCode(code string) error {
+	return ValidateString(code, 32, 32)
+}
+
+func ValidateVerifyEmailId(id int64) error {
+	if id <= 0 {
+		return fmt.Errorf("verify email id must be a positive number, %d is a negative number", id)
+	}
+	return nil
+}

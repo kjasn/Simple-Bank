@@ -20,6 +20,7 @@ require (
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.18.2
 	golang.org/x/crypto v0.22.0
+	golang.org/x/tools v0.13.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/grpc v1.61.0

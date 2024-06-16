@@ -26,7 +26,7 @@ Table verify_emails {
   is_used bool [not null, default: false]
   created_at timestamptz [not null, default: `now()`]
   // set expire time for security
-  expires_at timestamptz [not null, default: `now() + interval '15 minutes'`]
+  expired_at timestamptz [not null, default: `now() + interval '15 minutes'`]
 }
 
 Table accounts as A {

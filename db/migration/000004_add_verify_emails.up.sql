@@ -1,11 +1,11 @@
 CREATE TABLE "verify_emails" (
   "id" bigserial PRIMARY KEY,
-  "secret_code" char(6) NOT NULL,
+  "secret_code" char(32) NOT NULL,
   "username" varchar NOT NULL,
   "email" varchar NOT NULL,
   "is_used" bool NOT NULL DEFAULT false,
   "created_at" timestamptz NOT NULL DEFAULT (now()),
-  "expires_at" timestamptz NOT NULL DEFAULT (now() + interval '15 minutes')
+  "expired_at" timestamptz NOT NULL DEFAULT (now() + interval '15 minutes')
 );
 
 ALTER TABLE "verify_emails" ADD FOREIGN KEY ("username") REFERENCES "users" ("username");

@@ -12,6 +12,7 @@ import (
 )
 
 const TaskSendVerifyEmail = "task:send_verify_email"
+const LenOfSecretCode = 32
 
 type PayloadSendVerifyEmail struct {
 	Username string `json:"username"`
@@ -66,8 +67,8 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(
 	}
 
 
-	verifyEmail, err := processor.store.CreateVerifyEmail(ctx, db.CreateVerifyEmailParams{
-		SecretCode: utils.RandomString(6),
+	verifyEmail, err := processor.store.VerifyEmail(ctx, db.VerifyEmailParams{
+		SecretCode: utils.RandomString(LenOfSecretCode),
 		Username: user.Username,
 		Email: user.Email,
 	})
@@ -75,8 +76,8 @@ func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(
         return fmt.Errorf("failed to create verify email: %w", err)
 	}
 
-	subject := "Verify Email"
-	verifyUrl := fmt.Sprintf("http://simple-bank.org/verify_email?id=%d&secret_code=%s", verifyEmail.ID, verifyEmail.SecretCode)
+	subject := "Welcome to Simple Bank"
+	verifyUrl := fmt.Sprintf("http://localhost:8080/v1/verify_email?verify_email_id=%d&secret_code=%s", verifyEmail.ID, verifyEmail.SecretCode)
 
 	content := fmt.Sprintf(`<h1> Hello %s, welcome to simple bank ! </h1>
 	Please <a href="%s"> click here </a> to verify your email address. </br>

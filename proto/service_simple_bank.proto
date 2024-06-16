@@ -6,27 +6,28 @@ import "google/api/annotations.proto";
 import "rpc_create_user.proto";
 import "rpc_update_user.proto";
 import "rpc_login_user.proto";
+import "rpc_verify_email.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/kjasn/simple-bank/pb";
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  info: {
-    title: "Simple Bank API";
-    version: "1.2";
-    contact: {
-      name: "Kjasn";
-      url: "https://github.com/kjasn";
-      email: "none@example.com";
-    };
-  };
+	info: {
+		title: "Simple Bank API";
+		version: "1.2";
+		contact: {
+			name: "Kjasn";
+			url: "https://github.com/kjasn";
+			email: "none@example.com";
+		};
+	};
 };
 
 service SimpleBank {
     rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-          description: "Use this API to create new user";
-          summary: "Create new user";
+			description: "Use this API to create new user";
+			summary: "Create new user";
         };
         option (google.api.http) = {
             post: "/v1/create_user"
@@ -36,8 +37,8 @@ service SimpleBank {
     
     rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-          description: "Use this API to update user's info";
-          summary: "Update user";
+			description: "Use this API to update user's info";
+			summary: "Update user";
         };
         option (google.api.http) = {
             patch: "/v1/update_user"
@@ -46,12 +47,22 @@ service SimpleBank {
     }
     rpc LoginUser (LoginUserRequest) returns (LoginUserResponse) {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-          description: "Use this API to login user and get access token & refresh token";
-          summary: "Login user";
+			description: "Use this API to login user and get access token & refresh token";
+			summary: "Login user";
         };
         option (google.api.http) = {
             post: "/v1/login_user"
             body: "*"
+        };
+    }
+
+    rpc VerifyEmail (VerifyEmailRequest) returns (VerifyEmailResponse) {
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Use this API to verify email address when register";
+			summary: "Verify Email";
+        };
+        option (google.api.http) = {
+            get: "/v1/verify_email"
         };
     }
 }

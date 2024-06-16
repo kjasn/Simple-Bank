@@ -30,8 +30,8 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func runDBMigration(migrationURL string, postgresDNS string) {
-	migration, err := migrate.New(migrationURL, postgresDNS)
+func runDBMigration(migrationURL string, postgresDSN string) {
+	migration, err := migrate.New(migrationURL, postgresDSN)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Cannot create new migrate instance")
 	}
@@ -59,8 +59,9 @@ func main() {
 		log.Fatal().Err(err).Msg("Fail to connect to the db")
 	}
 
-	// 
+	// execute DB migration before start service (like: make migrateup in Makefile)
 	runDBMigration(config.MigrationURL, config.DSN)
+	
 	store := db.NewStore(conn)
 
 	// connect to redis and create a distributor
@@ -75,7 +76,6 @@ func main() {
 	go runTaskProcessor(redisOpt, store, mailer)
 	go runGatewayServer(config, store, taskDistributor)
 	runGrpcServer(config, store, taskDistributor)
-
 }
 
 

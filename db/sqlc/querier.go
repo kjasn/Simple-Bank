@@ -18,7 +18,6 @@ type Querier interface {
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
-	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	// maybe we don't want get return after delete
 	DeleteAccount(ctx context.Context, id int64) error
 	GetAccount(ctx context.Context, id int64) (Account, error)
@@ -37,6 +36,8 @@ type Querier interface {
 	// ONLY update the amount of an entry by from_account_id AND to_account_id
 	UpdateTransfer(ctx context.Context, arg UpdateTransferParams) (Transfer, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmail, error)
+	VerifyEmail(ctx context.Context, arg VerifyEmailParams) (VerifyEmail, error)
 }
 
 var _ Querier = (*Queries)(nil)
