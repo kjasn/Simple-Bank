@@ -32,6 +32,7 @@ server:
 	go run main.go
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/kjasn/simple-bank/db/sqlc Store
+	mockgen -package mockwk -destination worker/mock/distributor.go github.com/kjasn/simple-bank/worker TaskDistributor
 build:
 	docker build --network host -t simplebank:latest .
 dcrun:

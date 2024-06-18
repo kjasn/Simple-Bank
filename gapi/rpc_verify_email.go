@@ -2,7 +2,6 @@ package gapi
 
 import (
 	"context"
-	"log"
 
 	db "github.com/kjasn/simple-bank/db/sqlc"
 	"github.com/kjasn/simple-bank/pb"
@@ -26,7 +25,6 @@ func (server *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailReques
 		SecretCode: req.SecretCode,
 	})
 	if err != nil {
-		log.Printf("error occurred: %w", err)
 		return nil, status.Errorf(codes.Internal, "fail to verify email")
 	}
 
