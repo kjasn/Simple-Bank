@@ -60,6 +60,7 @@ func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest)
 		}
 	}
 
+
 	user, err := server.store.UpdateUser(ctx, arg)	// do not update username
 	if err != nil {
 		if err == sql.ErrNoRows {

@@ -36,7 +36,7 @@ func (maker *PasetoMaker)CreateToken(username string, duration time.Duration) (s
 		return "", payload, err
 	}
 
-	token, err := maker.paseto.Encrypt(maker.symmetricKey, payload, "I am a footer~")	// footer is nil
+	token, err := maker.paseto.Encrypt(maker.symmetricKey, payload, nil)	// footer is nil
 	return token, payload, err
 }
 	// VerifyToken checks if the token is valid or not.
