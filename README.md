@@ -255,7 +255,7 @@ Then using message queue will be a better design. Redis is an efficient message 
 
 ## Importance of Delay in Async Tasks
 
-Sometimes, we **would rather delay than process tasks immediately** to ensure the data has been stored in the database in case we can not get it during process async tasks, cause in real case, anything can happen, for example, it may takes time to write data into DB in a high-concurrency project.
+Sometimes, we **would rather delay than process tasks immediately** to ensure the data has been stored in the database in case we can not get it during process async tasks, cause in real case, anything can happen, for example, it may take time to write data into DB in a high-concurrency project.
 
 Here we gonna to simulate the scenario by sleep 2 seconds before commit a transaction, and what the send verify email feature will happen?
 
