@@ -73,7 +73,12 @@
     > 当出现一些错误时，比如 Timestamp 找不到，[这里](https://stackoverflow.com/questions/56031098/protobuf-timestamp-not-found) 是一种解决方法。
 
 - **statik**
+
   - 安装：`go get github.com/rakyll/statik`
+
+- **email** (v4.0.1)
+
+  - 安装：`go get github.com/jordan-wright/email`
 
 ## 处理并发和死锁
 
@@ -239,3 +244,77 @@ gRPC 以其高性能而闻名，非常适合微服务和移动应用，所以我
 首先，我们可能会考虑使用 goroutine 在后台处理，因为它实现起来很简单。但缺点是任务存在于进程的内存中。如果服务器崩溃，未处理的任务可能会丢失。
 
 使用消息队列会是一个更好的设计。Redis 是一个高效的信息队列，它将数据存储在内存和持久存储中。凭借其高并发性和可靠性，我们的任务不会丢失。
+
+## 异步任务中的延迟
+
+有时，我们**更希望延迟处理任务而不是立即处理**，这样能够确保数据已经存储在数据库中，以防在处理异步任务期间因无法获取数据而出现问题。因为在实际情况下，任何情况都有可能发生，例如，在高并发项目中，将数据写入数据库可能需要时间。
+
+为了模拟这一场景，我们可以在提交事务前暂停 2 秒，观察发送验证邮件功能会如何表现：
+
+```go
+// execTx executes a function within a database transaction.
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
+	// begin transaction
+	tx, err := store.db.BeginTx(ctx, nil)
+
+	// ...
+
+	// commit transaction
+	time.Sleep(2 * time.Second)
+	return tx.Commit()
+}
+```
+
+在 `CreateUser` 中，我们设置延迟时间为 1 秒（或不设置延迟）：
+
+```go
+opts := []asynq.Option {
+	asynq.MaxRetry(10),
+	asynq.ProcessIn(1 * time.Second),
+	// ...
+}
+```
+
+因此，处理器会立即从 Redis 中取出任务，并尝试从数据库获取数据，但此时数据可能还不存在。如果我们设置在记录不存在时使用 `asynq.SkipRetry`，则会直接跳过不再重试，导致用户永远收不到验证邮件。
+
+```go
+// retrieve user record from db
+user, err := processor.store.GetUser(ctx, payload.Username)
+if err != nil {
+	// user not exists
+	if err == sql.ErrNoRows {
+		return fmt.Errorf("user not exists: %w", asynq.SkipRetry)
+	}
+	return fmt.Errorf("failed to get user from database: %w", err)
+}
+```
+
+针对上述问题，我们可以移除 `asynq.SkipRetry`，因为我们已经设置了 `asynq.MaxRetry(10)`，希望在 10 次重试期间数据能够完成存储到数据库中。同时，我们应当在尝试处理任务之前增加一个延迟时间，以进一步确保数据库操作已完成。
+
+## 事务中的原子性
+
+在事务处理中，原子性起着至关重要的作用，尤其是在处理流程中某些部分可能失败的情况下。
+
+以典型的“创建用户”事务为例，该事务包含两个关键步骤：创建用户数据记录并将其存储在数据库中，随后发送验证邮件。如果邮件发送失败，则整个事务应被回滚。如果不采用事务处理，可能会出现这样的情况：用户的数据显示已成功存储在数据库中，但他们并未收到完成注册所必需的验证邮件。因此，如果同一用户再次尝试使用相同信息注册，很可能会与诸如用户名或电子邮件地址等字段的唯一性约束产生冲突。事务的原子性通过确保这两个操作要么全部完成，要么全部撤销，从而防止了这种情况的发生。
+
+需要注意的是，在使用 mock 测试 `create user` API 时，回调函数 `AfterCreated` 包含了如发送验证邮件的分布式任务，由于该回调仅在实际与数据库交互并执行真实事务时被调用，所以在对 `create user` 事务进行模拟时，实际上与数据库通信的调用并未真正执行，从而不会触发 `AfterCreated` 函数。有一种解决办法是在比较实际参数与预期参数是否匹配后，手动调用该函数。如果参数匹配，这意味着事务已执行。因此，我们可以使用预期的参数来调用 `AfterCreated` 函数。
+
+```go
+// db/gapi/rpc_create_user_test.go
+func (expected eqCreateUserTxParamsMatcher) Matches(x interface{}) bool {
+	actualArg, ok := x.(db.CreateUserTxParams)
+	if !ok {
+		return false
+	}
+
+	// ...
+	// comparing args
+	if !reflect.DeepEqual(expected.arg.CreateUserParams, actualArg.CreateUserParams) {
+		return false
+	}
+
+	// call AfterCreate and return
+	err = actualArg.AfterCreated(expected.user)
+	return err == nil
+}
+```

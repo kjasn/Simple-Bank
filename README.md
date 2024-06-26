@@ -84,6 +84,10 @@ This project requires the following tools and libraries to be installed on your 
 
   - Installation: `go get -u github.com/hibiken/asynq`
 
+- **email** (v4.0.1)
+
+  - Installation：`go get github.com/jordan-wright/email`
+
 ## Deal With Concurrency And Deadlock
 
 First, we add `FOR UPDATE` to function `GetAccount`:
@@ -248,3 +252,77 @@ For synchronous APIs, when clients send request to the server, the request **mus
 Firstly, we may think about using go routine to process in the background because it is simple to implement. But the drawback is the task live inside in the process's memory. If the server goes down, the unprocessed tasks may be lost.
 
 Then using message queue will be a better design. Redis is an efficient message queue, which stores its data both in memory and persistent storage. With its high-concurrency and reliability, our tasks will not be lost.
+
+## Importance of Delay in Async Tasks
+
+Sometimes, we **would rather delay than process tasks immediately** to ensure the data has been stored in the database in case we can not get it during process async tasks, cause in real case, anything can happen, for example, it may takes time to write data into DB in a high-concurrency project.
+
+Here we gonna to simulate the scenario by sleep 2 seconds before commit a transaction, and what the send verify email feature will happen?
+
+```go
+// execTx executes a function within a database transaction.
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
+	// begin transaction
+	tx, err := store.db.BeginTx(ctx, nil)
+
+	// ...
+
+	// commit transaction
+	time.Sleep(2 * time.Second)
+	return tx.Commit()
+}
+```
+
+And in `CreateUser`, we set delay time 1 second(or without delay time),
+
+```go
+opts := []asynq.Option {
+	asynq.MaxRetry(10),
+	asynq.ProcessIn(1 * time.Second),
+	// ...
+}
+```
+
+so processor will pick up tasks from Redis immediately, and get data from DB, but it does not exist. If we set `asynq.SkipRetry` when records do not exist, it will skip without retry, so the user will never get verify email.
+
+```go
+// retrieve user record from db
+user, err := processor.store.GetUser(ctx, payload.Username)
+if err != nil {
+	// user not exists
+	if err == sql.ErrNoRows {
+		return fmt.Errorf("user not exists: %w", asynq.SkipRetry)
+	}
+	return fmt.Errorf("failed to get user from database: %w", err)
+}
+```
+
+For the above problem, we can delete `asynq.SkipRetry`, just because we have set `asynq.MaxRetry(10)`, so we hope the data finishing storing into DB during the 10 retries. Also we should add a delay time before it.
+
+## Atomicity in Transaction
+
+Atomicity plays a crucial role in transactions, particularly when parts of a process may fail.
+
+Consider a typical Create User transaction that involves two critical steps: creating a user data record and storing it in the database, followed by sending a verification email. If the email sending fails, the entire transaction should be rolled back. Without employing transactional processing, a scenario could arise where the user's data is stored successfully in the database, but they do not receive the verification email necessary to complete registration. Consequently, if the same individual attempts to register again using the same information, it would likely conflict with the unique constraints on fields such as the username or email address. **Transactional atomicity prevents this by ensuring both operations either fully complete or are entirely undone.**
+
+Note that, when using mock to test `create user` api the `AfterCreated` call back function, which include distributor task (send verification email option), will missing calls, because it only be called if the real DB transaction is executed, **while mocking this `create user` transaction, the actual call that talks to DB is not executed** then the `AfterCreated` function is not triggered. There is a way to trigger it is calling it after comparing the actual arguments with expected ones. **If it matched, this means the transaction is executed**. So we can call `AfterCreated` function with expected arguments.
+
+```go
+// db/gapi/rpc_create_user_test.go
+func (expected eqCreateUserTxParamsMatcher) Matches(x interface{}) bool {
+	actualArg, ok := x.(db.CreateUserTxParams)
+	if !ok {
+		return false
+	}
+
+	// ...
+	// comparing args
+	if !reflect.DeepEqual(expected.arg.CreateUserParams, actualArg.CreateUserParams) {
+		return false
+	}
+
+	// call AfterCreate and return
+	err = actualArg.AfterCreated(expected.user)
+	return err == nil
+}
+```
