@@ -1,9 +1,15 @@
 -- SQL dump generated using DBML (dbml.dbdiagram.io)
 -- Database: PostgreSQL
--- Generated at: 2024-06-16T16:32:24.336Z
+-- Generated at: 2024-06-27T08:45:59.653Z
+
+CREATE TYPE "user_role" AS ENUM (
+  'depositor',
+  'banker'
+);
 
 CREATE TABLE "users" (
   "username" varchar PRIMARY KEY,
+  "role" user_role NOT NULL DEFAULT 'depositor',
   "hashed_password" varchar NOT NULL,
   "full_name" varchar NOT NULL,
   "email" varchar UNIQUE NOT NULL,

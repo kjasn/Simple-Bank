@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	db "github.com/kjasn/simple-bank/db/sqlc"
 )
 
 
@@ -26,8 +27,8 @@ func NewJWTMaker(secretKey string) (Maker, error) {
 
 
 
-func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (string, *Payload, error) {
-	payload, err := NewPayload(username, duration)
+func (maker *JWTMaker) CreateToken(username string, role db.UserRole, duration time.Duration) (string, *Payload, error) {
+	payload, err := NewPayload(username, role, duration)
 	if err != nil {
 		return "", payload, err	
 	}

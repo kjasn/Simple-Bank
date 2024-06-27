@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/aead/chacha20poly1305"
+	db "github.com/kjasn/simple-bank/db/sqlc"
 	"github.com/o1egl/paseto"
 )
 
@@ -29,8 +30,8 @@ func NewPasetoMaker(symmetricKey string) (Maker, error) {
 
 
 	// CreateToken creates a signed token for a specific username and duration. 
-func (maker *PasetoMaker)CreateToken(username string, duration time.Duration) (string, *Payload, error) {
-	payload, err := NewPayload(username, duration)
+func (maker *PasetoMaker)CreateToken(username string, role db.UserRole, duration time.Duration) (string, *Payload, error) {
+	payload, err := NewPayload(username, role, duration)
 
 	if err != nil {
 		return "", payload, err

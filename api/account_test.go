@@ -43,7 +43,7 @@ func TestGetAccountAPI(t *testing.T) {
 				Return(account, nil)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -59,7 +59,7 @@ func TestGetAccountAPI(t *testing.T) {
 				Times(1).Return(db.Account{}, db.ErrRecordNotFound)	// except no account found with no rows error
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -74,7 +74,7 @@ func TestGetAccountAPI(t *testing.T) {
 				Times(1).Return(db.Account{}, sql.ErrConnDone)	// except no account found with internal server error
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -87,7 +87,7 @@ func TestGetAccountAPI(t *testing.T) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Any()).Times(0)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -101,7 +101,7 @@ func TestGetAccountAPI(t *testing.T) {
 				Times(1).Return(account, nil)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, "unauthorized_user", time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, "unauthorized_user", db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
 				require.Equal(t, http.StatusUnauthorized, recorder.Code)
@@ -177,7 +177,7 @@ func TestCreateAccountAPI(t *testing.T) {
 				Return(account, nil)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -196,7 +196,7 @@ func TestCreateAccountAPI(t *testing.T) {
 				Return(db.Account{}, sql.ErrConnDone)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -213,7 +213,7 @@ func TestCreateAccountAPI(t *testing.T) {
 				Times(0)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -290,7 +290,7 @@ func TestListAccountsAPI(t *testing.T) {
 				Return(accounts, nil)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
@@ -310,7 +310,7 @@ func TestListAccountsAPI(t *testing.T) {
 				Return([]db.Account{}, sql.ErrConnDone)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusInternalServerError, recorder.Code)
@@ -328,7 +328,7 @@ func TestListAccountsAPI(t *testing.T) {
 				Times(0)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -346,7 +346,7 @@ func TestListAccountsAPI(t *testing.T) {
 				Times(0)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, db.UserRoleDepositor, time.Minute)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusBadRequest, recorder.Code)

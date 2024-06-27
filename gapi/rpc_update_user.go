@@ -22,12 +22,13 @@ const (
 
 func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
 	// check payload first
-	authPayload, err := server.authorization(ctx)
+	authPayload, err := server.authorization(ctx, []db.UserRole{db.UserRoleDepositor, db.UserRoleBanker})
 	if err != nil {
 		return nil, unAuthenticatedError(err)
 	}
 	
-	if authPayload.Username != req.GetUsername() {
+	// only employees can modify others' profile
+	if authPayload.Username != string(db.UserRoleBanker) && authPayload.Username != req.GetUsername() {
 		return nil, fmt.Errorf("can not update other's info")
 	}
 

@@ -64,7 +64,7 @@ func TestUpdateUserAPI(t *testing.T) {
 				Times(1).Return(updatedUser, nil)
 			},
 			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
-				return buildContextWithBearerToken(t, tokenMaker, user.Username, time.Minute)
+				return buildContextWithBearerToken(t, tokenMaker, user.Username, user.Role, time.Minute)
 			},
 			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
 				require.NoError(t, err)
@@ -89,7 +89,7 @@ func TestUpdateUserAPI(t *testing.T) {
 				Times(1).Return(db.User{}, sql.ErrConnDone)
 			},
 			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
-				return buildContextWithBearerToken(t, tokenMaker, user.Username, time.Minute)
+				return buildContextWithBearerToken(t, tokenMaker, user.Username, user.Role, time.Minute)
 			}, 
 			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
 				require.Error(t, err)
@@ -110,7 +110,7 @@ func TestUpdateUserAPI(t *testing.T) {
 				Times(1).Return(db.User{}, db.ErrRecordNotFound)
 			},
 			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
-				return buildContextWithBearerToken(t, tokenMaker, user.Username, time.Minute)
+				return buildContextWithBearerToken(t, tokenMaker, user.Username, user.Role, time.Minute)
 			},
 			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
 				require.Error(t, err)
@@ -131,7 +131,7 @@ func TestUpdateUserAPI(t *testing.T) {
 				Times(0)
 			},
 			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
-				return buildContextWithBearerToken(t, tokenMaker, user.Username, -time.Minute)
+				return buildContextWithBearerToken(t, tokenMaker, user.Username, user.Role, -time.Minute)
 			},
 			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
 				require.Error(t, err)
@@ -173,7 +173,7 @@ func TestUpdateUserAPI(t *testing.T) {
 				Times(0)
 			},
 			buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
-				return buildContextWithBearerToken(t, tokenMaker, user.Username, time.Minute)
+				return buildContextWithBearerToken(t, tokenMaker, user.Username, user.Role, time.Minute)
 			},
 			checkResponse: func(t *testing.T, res *pb.UpdateUserResponse, err error) {
 				require.Error(t, err)

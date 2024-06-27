@@ -67,7 +67,8 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 
 	// create access token 
 	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(
-		session.Username,	// OR refreshPayload.Username
+		refreshPayload.Username,	// OR refreshPayload.Username
+		refreshPayload.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {

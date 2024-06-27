@@ -194,6 +194,7 @@ func createRandomUser(t *testing.T) (db.User, string) {
 
 	user := db.User{
 		Username: utils.RandomOwner(),
+		Role: db.UserRoleDepositor,
 		HashedPassword: hashedPassword,
 		FullName: utils.RandomOwner(),
 		Email: utils.RandomEmail(),

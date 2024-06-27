@@ -14,6 +14,7 @@ import (
 
 type createUserRequest struct {
 	Username string `json:"username" binding:"required,alphanum"`
+	Role 	 string	`json:"role"`
 	Password string `json:"password" binding:"required,min=6"`
 	FullName string `json:"full_name" binding:"required"`
 	Email string `json:"email" binding:"required,email"`
@@ -22,6 +23,7 @@ type createUserRequest struct {
 // user data to object, without hashed password
 type userDTO struct {
 	Username          string    `json:"username"`
+	Role 			  string	`json:"role"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
@@ -31,6 +33,7 @@ type userDTO struct {
 func toUserDTO(u *db.User) userDTO{
 	return userDTO {
 		Username: u.Username,
+		Role: string(u.Role),
 		FullName: u.FullName,
 		Email: u.Email,
 		PasswordChangedAt: u.PasswordChangedAt,
@@ -148,7 +151,8 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	
 	// create access token 
 	accessToken, accessTokenPayload, err := server.tokenMaker.CreateToken(
-		req.Username,
+		user.Username,
+		user.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -158,7 +162,8 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	// create refresh token after access token
 	refreshToken, refreshTokenPayload, err := server.tokenMaker.CreateToken(
-		req.Username,
+		user.Username,
+		user.Role,
 		server.config.RefreshTokenDuration,
 	)
 	if err != nil {

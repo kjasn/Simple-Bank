@@ -66,7 +66,7 @@ func TestCreateTransfer(t *testing.T) {
 				Times(1)
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
-				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user1.Username, time.Minute)
+				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user1.Username, user1.Role, time.Minute)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
