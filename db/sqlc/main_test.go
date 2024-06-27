@@ -1,18 +1,17 @@
 package db
 
 import (
-	"database/sql"
+	"context"
 	"log"
 	"os"
 	"testing"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kjasn/simple-bank/utils"
-	_ "github.com/lib/pq" // provide a driver that implements postgres
 )
 
 
-var testQueries *Queries	// save as a global var
-var testDB *sql.DB
+var testStore Store
 
 func TestMain(m *testing.M) {
 	var err error
@@ -22,12 +21,12 @@ func TestMain(m *testing.M) {
 		log.Fatal("Cannot load config:", err)
 	}
 
-	testDB, err = sql.Open(config.DBDriver, config.DSN)
+	connPool, err := pgxpool.New(context.Background(), config.DSN)
 
 	if err != nil {
 		log.Fatal("Fail to connect to the db:", err)
 	}
 
-	testQueries = New(testDB)
+	testStore = NewStore(connPool)
 	os.Exit(m.Run())
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"net"
 	"net/http"
 	"os"
@@ -15,6 +14,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	_ "github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kjasn/simple-bank/api"
 	db "github.com/kjasn/simple-bank/db/sqlc"
 	_ "github.com/kjasn/simple-bank/doc/statik"
@@ -23,7 +24,6 @@ import (
 	"github.com/kjasn/simple-bank/pb"
 	"github.com/kjasn/simple-bank/utils"
 	"github.com/kjasn/simple-bank/worker"
-	_ "github.com/lib/pq" // provide a driver that implements postgres
 	"github.com/rakyll/statik/fs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -54,7 +54,8 @@ func main() {
 		// set good read style for console when development
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})	
 	}
-	conn, err := sql.Open(config.DBDriver, config.DSN)
+	// conn, err := sql.Open(config.DBDriver, config.DSN)
+	connPool, err := pgxpool.New(context.Background(), config.DSN)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Fail to connect to the db")
 	}
@@ -62,7 +63,7 @@ func main() {
 	// execute DB migration before start service (like: make migrateup in Makefile)
 	runDBMigration(config.MigrationURL, config.DSN)
 	
-	store := db.NewStore(conn)
+	store := db.NewStore(connPool)
 
 	// connect to redis and create a distributor
 	redisOpt := asynq.RedisClientOpt{Addr: config.RedisAddress}

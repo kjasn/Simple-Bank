@@ -56,7 +56,7 @@ func TestGetAccountAPI(t *testing.T) {
 			buildStubs: func(store *mockdb.MockStore) {
 				// run with any context and a ID equals the created accounts' and call the function 1 time 
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(account.ID)).
-				Times(1).Return(db.Account{}, sql.ErrNoRows)	// except no account found with no rows error
+				Times(1).Return(db.Account{}, db.ErrRecordNotFound)	// except no account found with no rows error
 			},
 			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
 				addAuthorization(t, request, tokenMaker, supportedAuthorizationType, user.Username, time.Minute)

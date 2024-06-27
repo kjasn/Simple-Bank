@@ -16,7 +16,7 @@ import (
 	mockdb "github.com/kjasn/simple-bank/db/mock"
 	db "github.com/kjasn/simple-bank/db/sqlc"
 	"github.com/kjasn/simple-bank/utils"
-	"github.com/lib/pq"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -110,7 +110,8 @@ func TestCreateUserAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().CreateUser(gomock.Any(), gomock.Any()).Times(1).
-				Return(db.User{}, &pq.Error{Code: "23505"})	// except duplicated username	
+				// Return(db.User{}, &pq.Error{Code: "23505"})	// except duplicated username	
+				Return(db.User{}, db.ErrUniqueViolation)	// except duplicated username	
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) { 
 				require.Equal(t, http.StatusForbidden, recorder.Code)
@@ -234,7 +235,7 @@ func TestLoginUserAPI(t *testing.T) {
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 				GetUser(gomock.Any(), gomock.Any()).
-				Times(1).Return(db.User{}, sql.ErrNoRows)
+				Times(1).Return(db.User{}, db.ErrRecordNotFound)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)

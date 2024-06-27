@@ -15,7 +15,7 @@ import (
 	"github.com/kjasn/simple-bank/utils"
 	"github.com/kjasn/simple-bank/worker"
 	mockwk "github.com/kjasn/simple-bank/worker/mock"
-	"github.com/lib/pq"
+
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -143,7 +143,7 @@ func TestCreateUserAPI(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore, taskDistributor *mockwk.MockTaskDistributor) {
 				store.EXPECT().CreateUserTx(gomock.Any(), gomock.Any()).
-				Times(1).Return(db.CreateUserTxResult{}, &pq.Error{Code: "23505"})
+				Times(1).Return(db.CreateUserTxResult{}, db.ErrUniqueViolation)
 
 				// transaction fail
 				taskDistributor.EXPECT().DistributeTaskSendVerifyEmail(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
