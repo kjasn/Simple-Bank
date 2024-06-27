@@ -2,7 +2,7 @@
 
 [README-en](./README.md)
 
-## 需求
+## 前提
 
 该项目需要在您的系统上安装以下工具和库。请确保您拥有指定版本或更高版本。
 
@@ -30,9 +30,13 @@
 
   - 安装：`go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`
 
-- **lib/pq**: (v1.10.9) 用于提供实现 postgres 的驱动
+- **lib/pq**(已弃用：改为使用 pgx): (v1.10.9) 用于提供实现 postgres 的驱动
 
   - 安装：`go get github.com/lib/pq`
+
+- **pgx**
+
+  - 安装: `go get github.com/jackc/pgx/v5`
 
 - **testify** (v1.9.0) 用于检查单元测试返回
 
@@ -282,7 +286,7 @@ opts := []asynq.Option {
 user, err := processor.store.GetUser(ctx, payload.Username)
 if err != nil {
 	// user not exists
-	if err == sql.ErrNoRows {
+	if errors.Is(err, db.ErrRecordNotFound) {
 		return fmt.Errorf("user not exists: %w", asynq.SkipRetry)
 	}
 	return fmt.Errorf("failed to get user from database: %w", err)

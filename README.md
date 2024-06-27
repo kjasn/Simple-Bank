@@ -30,9 +30,13 @@ This project requires the following tools and libraries to be installed on your 
 
   - Installation: `go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest`
 
-- **lib/pq**: (v1.10.9) Using to provide a driver that implements postgres
+- **lib/pq** (Deprecated: changing to pgx): (v1.10.9) Using to provide a driver that implements postgres
 
   - Installation: `go get github.com/lib/pq`
+
+- **pgx**
+
+  - Installation: `go get github.com/jackc/pgx/v5`
 
 - **testify** (v1.9.0) Using to check the unit test return
 
@@ -290,7 +294,7 @@ so processor will pick up tasks from Redis immediately, and get data from DB, bu
 user, err := processor.store.GetUser(ctx, payload.Username)
 if err != nil {
 	// user not exists
-	if err == sql.ErrNoRows {
+	if errors.Is(err, db.ErrRecordNotFound) {
 		return fmt.Errorf("user not exists: %w", asynq.SkipRetry)
 	}
 	return fmt.Errorf("failed to get user from database: %w", err)
