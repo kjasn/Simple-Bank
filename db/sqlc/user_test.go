@@ -18,6 +18,7 @@ func createRandomUser(t *testing.T) User {
 
 	arg := CreateUserParams {
 		Username: utils.RandomOwner(),
+		Role: UserRoleDepositor,
 		HashedPassword: hashedPassword, 
 		FullName: utils.RandomOwner(),
 		Email: utils.RandomEmail(),
@@ -114,6 +115,23 @@ func TestUpdateUser(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, updatedUser)
 	require.Equal(t, oldUser.Username, updatedUser.Username)
+	require.Equal(t, newHashedPassword, updatedUser.HashedPassword)
+	require.Equal(t, newFullName, updatedUser.FullName)
+	require.Equal(t, newEmail, updatedUser.Email)
+
+	// update user role
+	updatedUser, err = testStore.UpdateUser(context.Background(), UpdateUserParams{
+		Role: NullUserRole {
+			UserRole: UserRoleBanker,
+			Valid: true,
+		},
+		Username: oldUser.Username,
+	})
+
+	require.NoError(t, err)
+	require.NotEmpty(t, updatedUser)
+	require.Equal(t, oldUser.Username, updatedUser.Username)
+	require.Equal(t, UserRoleBanker, updatedUser.Role)
 	require.Equal(t, newHashedPassword, updatedUser.HashedPassword)
 	require.Equal(t, newFullName, updatedUser.FullName)
 	require.Equal(t, newEmail, updatedUser.Email)

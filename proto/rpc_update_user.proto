@@ -8,9 +8,10 @@ option go_package = "github.com/kjasn/simple-bank/pb";
 
 message UpdateUserRequest {
     string username = 1;
-	optional string full_name = 2;
-	optional string email = 3;
-    optional string password = 4;
+    optional string role = 2;
+	optional string full_name = 3;
+	optional string email = 4;
+    optional string password = 5;
 }
 
 message UpdateUserResponse {

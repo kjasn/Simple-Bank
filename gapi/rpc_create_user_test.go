@@ -72,6 +72,7 @@ func TestCreateUserAPI(t *testing.T) {
 			name: "OK",
 			req: &pb.CreateUserRequest {
 				Username: user.Username,
+				Role: string(user.Role),
 				Password: password,
 				FullName: user.FullName,
 				Email: user.Email,
@@ -80,6 +81,7 @@ func TestCreateUserAPI(t *testing.T) {
 				arg := db.CreateUserTxParams{
 					CreateUserParams: db.CreateUserParams {
 						Username: user.Username,
+						Role: user.Role,
 						FullName: user.FullName,
 						Email: user.Email,
 					},
@@ -101,18 +103,20 @@ func TestCreateUserAPI(t *testing.T) {
 				require.NotNil(t, res)
 				// get created user
 				createdUser := res.GetUser()
-				require.Equal(t, createdUser.Username, user.Username)
-				require.Equal(t, createdUser.FullName, user.FullName)
-				require.Equal(t, createdUser.Email, user.Email)
-				require.WithinDuration(t, createdUser.PasswordChangedAt.AsTime(), user.PasswordChangedAt, 
+				require.Equal(t, user.Username, createdUser.Username)
+				require.Equal(t, user.Role, db.UserRole(createdUser.Role))
+				require.Equal(t, user.FullName, createdUser.FullName)
+				require.Equal(t, user.Email, createdUser.Email)
+				require.WithinDuration(t, user.PasswordChangedAt, createdUser.PasswordChangedAt.AsTime(), 
 				time.Second)
-				require.WithinDuration(t, createdUser.CreatedAt.AsTime(), user.CreatedAt, time.Second)
+				require.WithinDuration(t, user.CreatedAt, createdUser.CreatedAt.AsTime(), time.Second)
 			},
 		},
 		{
 			name: "InternalError",
 			req: &pb.CreateUserRequest {
 				Username: user.Username,
+				Role: string(user.Role),
 				Password: password,
 				FullName: user.FullName,
 				Email: user.Email,
@@ -137,6 +141,7 @@ func TestCreateUserAPI(t *testing.T) {
 			name: "DuplicateUsername",
 			req: &pb.CreateUserRequest {
 				Username: user.Username,
+				Role: string(user.Role),
 				Password: password,
 				FullName: user.FullName,
 				Email: user.Email,

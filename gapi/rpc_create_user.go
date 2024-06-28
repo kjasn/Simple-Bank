@@ -32,6 +32,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	arg := db.CreateUserTxParams {
 		CreateUserParams: db.CreateUserParams{
 			Username: req.GetUsername(),
+			Role: db.UserRole(req.GetRole()),
 			HashedPassword: hashedPassword,
 			FullName: req.GetFullName(),
 			Email: req.GetEmail(),
@@ -71,6 +72,10 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 func validateCreateUserRequest(req *pb.CreateUserRequest) (violation []*errdetails.BadRequest_FieldViolation){
 	if err := val.ValidateUsername(req.GetUsername()); err != nil {
 		violation = append(violation, fieldViolation("username", err))
+	}
+
+	if err := val.ValidUserRole(req.GetRole()); err != nil {
+		violation = append(violation, fieldViolation("role", err))
 	}
 
 	if err := val.ValidatePassword(req.GetPassword()); err != nil {

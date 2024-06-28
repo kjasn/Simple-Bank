@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"time"
 
@@ -14,7 +13,7 @@ import (
 
 type createUserRequest struct {
 	Username string `json:"username" binding:"required,alphanum"`
-	Role 	 string	`json:"role"`
+	Role	 db.UserRole `json:"role" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
 	FullName string `json:"full_name" binding:"required"`
 	Email string `json:"email" binding:"required,email"`
@@ -23,7 +22,7 @@ type createUserRequest struct {
 // user data to object, without hashed password
 type userDTO struct {
 	Username          string    `json:"username"`
-	Role 			  string	`json:"role"`
+	Role			 db.UserRole `json:"role" binding:"required"`
 	FullName          string    `json:"full_name"`
 	Email             string    `json:"email"`
 	PasswordChangedAt time.Time `json:"password_changed_at"`
@@ -33,7 +32,7 @@ type userDTO struct {
 func toUserDTO(u *db.User) userDTO{
 	return userDTO {
 		Username: u.Username,
-		Role: string(u.Role),
+		Role: u.Role,
 		FullName: u.FullName,
 		Email: u.Email,
 		PasswordChangedAt: u.PasswordChangedAt,
@@ -58,6 +57,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 	arg := db.CreateUserParams {
 		Username: req.Username,
+		Role: req.Role,
 		HashedPassword: hashedPassword,
 		FullName: req.FullName,
 		Email: req.Email,
@@ -91,9 +91,6 @@ func (server *Server) getUser(ctx *gin.Context) {
 	}
 
 	user, err := server.store.GetUser(ctx, req.Username)
-	log.Println("==================")
-	log.Println(req.Username)
-	log.Println("==================")
 	if err != nil {
 		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))

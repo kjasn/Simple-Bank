@@ -170,6 +170,9 @@
         "username": {
           "type": "string"
         },
+        "role": {
+          "type": "string"
+        },
         "fullName": {
           "type": "string"
         },
@@ -231,6 +234,9 @@
         "username": {
           "type": "string"
         },
+        "role": {
+          "type": "string"
+        },
         "fullName": {
           "type": "string"
         },
@@ -254,6 +260,9 @@
       "type": "object",
       "properties": {
         "username": {
+          "type": "string"
+        },
+        "role": {
           "type": "string"
         },
         "fullName": {

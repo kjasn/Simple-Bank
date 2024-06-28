@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/mail"
 	"regexp"
+
+	db "github.com/kjasn/simple-bank/db/sqlc"
 )
 
 var (
@@ -31,6 +33,13 @@ func ValidateUsername(name string) error {
 	// check characters - only allow  lower letters, digitals, underscores
 	if !isValidUsername(name) {
 		return fmt.Errorf("username can only contains lower letters, digitals, underscores, and can not start with digital and underscores")
+	}
+	return nil
+}
+
+func ValidUserRole(role string) error {
+	if role != string(db.UserRoleDepositor) && role != string(db.UserRoleBanker) {
+		return fmt.Errorf("user role is illegal")
 	}
 	return nil
 }

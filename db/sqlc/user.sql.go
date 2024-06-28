@@ -14,24 +14,27 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   username, 
+  role,
   hashed_password,
   full_name,
   email
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )RETURNING username, hashed_password, full_name, email, password_changed_at, created_at, is_email_verified, role
 `
 
 type CreateUserParams struct {
-	Username       string `json:"username"`
-	HashedPassword string `json:"hashed_password"`
-	FullName       string `json:"full_name"`
-	Email          string `json:"email"`
+	Username       string   `json:"username"`
+	Role           UserRole `json:"role"`
+	HashedPassword string   `json:"hashed_password"`
+	FullName       string   `json:"full_name"`
+	Email          string   `json:"email"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Username,
+		arg.Role,
 		arg.HashedPassword,
 		arg.FullName,
 		arg.Email,
@@ -74,25 +77,28 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 const updateUser = `-- name: UpdateUser :one
 UPDATE users 
 SET 
-  hashed_password = COALESCE($1, hashed_password), 
-  full_name = COALESCE($2, full_name),
-  email = COALESCE($3, email), 
-  is_email_verified = COALESCE($4, is_email_verified), 
+  role = COALESCE($1, role),
+  hashed_password = COALESCE($2, hashed_password), 
+  full_name = COALESCE($3, full_name),
+  email = COALESCE($4, email), 
+  is_email_verified = COALESCE($5, is_email_verified), 
   password_changed_at = now()
-WHERE username = $5
+WHERE username = $6
 RETURNING username, hashed_password, full_name, email, password_changed_at, created_at, is_email_verified, role
 `
 
 type UpdateUserParams struct {
-	HashedPassword  pgtype.Text `json:"hashed_password"`
-	FullName        pgtype.Text `json:"full_name"`
-	Email           pgtype.Text `json:"email"`
-	IsEmailVerified pgtype.Bool `json:"is_email_verified"`
-	Username        string      `json:"username"`
+	Role            NullUserRole `json:"role"`
+	HashedPassword  pgtype.Text  `json:"hashed_password"`
+	FullName        pgtype.Text  `json:"full_name"`
+	Email           pgtype.Text  `json:"email"`
+	IsEmailVerified pgtype.Bool  `json:"is_email_verified"`
+	Username        string       `json:"username"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRow(ctx, updateUser,
+		arg.Role,
 		arg.HashedPassword,
 		arg.FullName,
 		arg.Email,

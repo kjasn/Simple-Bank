@@ -64,6 +64,7 @@ func TestCreateUserAPI(t *testing.T) {
 			name: "OK",
 			body: gin.H{
 				"username": user.Username,
+				"role": user.Role,
 				"password": password,
 				"full_name": user.FullName,
 				"email": user.Email,
@@ -71,6 +72,7 @@ func TestCreateUserAPI(t *testing.T) {
 			buildStubs: func(store *mockdb.MockStore) {
 				arg := db.CreateUserParams{
 					Username: user.Username,
+					Role: user.Role,
 					FullName: user.FullName,
 					Email: user.Email,
 				}
@@ -88,6 +90,7 @@ func TestCreateUserAPI(t *testing.T) {
 			name: "InternalError",
 			body: gin.H{
 				"username": user.Username,
+				"role": user.Role,
 				"password": password,
 				"full_name": user.FullName,
 				"email": user.Email,
@@ -104,6 +107,7 @@ func TestCreateUserAPI(t *testing.T) {
 			name: "DuplicatedUsername",
 			body: gin.H{
 				"username": user.Username,
+				"role": user.Role,
 				"password": password,
 				"full_name": user.FullName,
 				"email": user.Email,
@@ -121,6 +125,7 @@ func TestCreateUserAPI(t *testing.T) {
 			name: "InvalidUsername",
 			body: gin.H{
 				"username": "invalid-username",
+				"role": user.Role,
 				"password": password,
 				"full_name": user.FullName,
 				"email": user.Email,
@@ -136,6 +141,7 @@ func TestCreateUserAPI(t *testing.T) {
 			name: "InvalidEmail",
 			body: gin.H{
 				"username": user.Username,
+				"role": user.Role,
 				"password": password,
 				"full_name": user.FullName,
 				"email": "invalid-Email",
@@ -151,6 +157,7 @@ func TestCreateUserAPI(t *testing.T) {
 			name: "TooShortPassword",
 			body: gin.H{
 				"username":  user.Username,
+				"role": user.Role,
 				"password":  "123",	// at least 6 characters
 				"full_name": user.FullName,
 				"email":     user.Email,
@@ -346,6 +353,7 @@ func createRandomUser(t *testing.T) (db.User, string) {
 
 	user := db.User{
 		Username: utils.RandomOwner(),
+		Role: db.UserRoleDepositor,
 		HashedPassword: hashedPassword,
 		FullName: utils.RandomOwner(),
 		Email: utils.RandomEmail(),
